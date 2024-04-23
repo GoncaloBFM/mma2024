@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 ROOT_DIR = Path(__file__).parent.parent
-ASSETS_DIR = os.path.join(ROOT_DIR, 'assets')
+ASSETS_DIR = os.path.join(ROOT_DIR, 'dataset')
 DATA_DIR = os.path.join(ASSETS_DIR, 'data')
 DOWNLOADS_DIR = os.path.join(ASSETS_DIR, 'downloads')
 DATASET_PATH = os.path.join(DATA_DIR, 'dataset.csv')
