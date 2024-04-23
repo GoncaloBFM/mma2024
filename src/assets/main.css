@@ -1,0 +1,36 @@
+.border-widget{
+    border: 1px solid;
+}
+
+.header {
+    padding: 20px;
+}
+
+.widget{
+    width: 700px;
+    height: 450px;
+    margin: 10px;
+}
+
+.gallery{
+    overflow-y: scroll;
+    height: 400px;
+    max-height: 400px;
+}
+
+.gallery-image{
+    height: 120px;
+    width: 120px;
+    border: 2px solid #636363;
+}
+
+.gallery-row {
+    text-align: center;
+    padding-top: 10px;
+}
+
+.tooltip-text {
+  width: 120px;
+  color: #656565;
+  text-align: center;
+}
