@@ -16,6 +16,8 @@ import dash_bootstrap_components as dbc
 
 IMAGE_GALLERY_SIZE = 34
 IMAGE_GALLERY_ROW_SIZE = 4
+WORDCLOUD_IMAGE_HEIGHT = 450
+WORDCLOUD_IMAGE_WIDTH = 600
 
 def run_ui():
     external_stylesheets = [dbc.themes.CERULEAN]
@@ -37,7 +39,11 @@ def run_ui():
             ],
         rowData=[],
         columnSize="sizeToFit",
-        dashGridOptions={"rowSelection": "single", "pagination": True, "paginationAutoPageSize": True},
+        dashGridOptions={
+            "rowSelection": "single",
+            "pagination": True,
+            "paginationAutoPageSize": True
+        },
         className='ag-theme-alpine widget',
         style={'width': '', 'height': ''},
         id='table'
@@ -53,7 +59,15 @@ def run_ui():
         className='widget border-widget',
         config={
             'displaylogo': False,
-            'modeBarButtonsToRemove': ['zoom', 'pan', 'zoomIn', 'zoomOut', 'autoScale', 'resetScale']
+            'modeBarButtonsToRemove':
+                [
+                    'zoom',
+                    'pan',
+                    'zoomIn',
+                    'zoomOut',
+                    'autoScale',
+                    'resetScale'
+                ]
         }
     )
 
@@ -146,10 +160,10 @@ def scatterplot_is_updated(selected_data):
 
     counts = {row['class_name']: row['count_in_selection'] for _, row in group_by_count.iterrows()}
     img = BytesIO()
-    wc = WordCloud(background_color='white', height=450, width=600)
+    wc = WordCloud(background_color='white', height=WORDCLOUD_IMAGE_HEIGHT, width=WORDCLOUD_IMAGE_WIDTH)
     wc.fit_words(counts)
     wc.to_image().save(img, format='PNG')
-    wordcloud_image = 'data:image/png;base64,{}'.format(base64.b64encode(img.getvalue()).decode())
+    wordcloud_image = encode_image(img.getvalue())
 
     sample_data = selected_data.head(IMAGE_GALLERY_SIZE)
     image_paths = sample_data['image_path'].values
@@ -163,13 +177,20 @@ def scatterplot_is_updated(selected_data):
             with open(image_paths[i+j], 'rb') as f:
                 image = f.read()
             html_image = [
-                html.Img(src='data:image/png;base64,' + base64.b64encode(image).decode('utf-8'), className='gallery-image'),
+                html.Img(
+                    src=encode_image(image),
+                    className='gallery-image'
+                ),
                 html.Span(class_names[i+j], className='tooltip-text')
             ]
             image_cols.append(dbc.Col(html_image, width=3, className='gallery-row'))
         image_rows.append(dbc.Row(image_cols))
 
     return wordcloud_image, table_records, image_rows
+
+
+def encode_image(image):
+    return f'data:image/png;base64,{base64.b64encode(image).decode()}'
 
 class Dataset:
     dataset = None
