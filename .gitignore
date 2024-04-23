@@ -1,4 +1,4 @@
 assets/
 .idea
 .venv
-**/__pychache__
+**/__pychache__/
