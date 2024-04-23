@@ -56,7 +56,7 @@ def run_ui():
     scatterplot = dcc.Graph(
         figure=scatterplot_figure,
         id='scatterplot',
-        className='widget border-widget',
+        className='widget',
         config={
             'displaylogo': False,
             'modeBarButtonsToRemove':
