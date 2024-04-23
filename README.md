@@ -30,7 +30,7 @@ docker buildx build . -t mma2024
 ### Run
 On the root directory of the project run:
 ```
-docker run --net=host -v ./assets:/usr/src/app/assets/  mma2024
+docker run --net=host -v ./dataset:/usr/src/app/dataset/  mma2024
 ```
 
 After the Dash server is running open http://127.0.0.1:8050/ on your browser.
