@@ -1,0 +1,12 @@
+plotly==5.20.0
+dash==2.16.1
+git+https://github.com/openai/CLIP.git
+dash-bootstrap-components
+pandas
+dash-ag-grid
+wordcloud
+dash-image-gallery
+dash-core-components
+umap-learn
+scikit-learn
+wget
