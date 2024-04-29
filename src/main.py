@@ -126,7 +126,7 @@ def table_row_is_clicked(scatterplot, selected_row):
     Input('scatterplot', 'relayoutData'),
     prevent_initial_call=True,
 )
-def scatter_plot_is_zoomed(scatterplot, zoom_data):
+def scatterplot_is_zoomed(scatterplot, zoom_data):
     if len(zoom_data) == 1 and 'dragmode' in zoom_data:
         return dash.no_update
 
