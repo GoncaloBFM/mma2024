@@ -113,9 +113,9 @@ def table_row_is_clicked(scatterplot, selected_row):
         selected_class = selected_row[0]['class_id']
         colors = Dataset.get()['class_id'].map(lambda x: SCATTERPLOT_SELECTED_COLOR if selected_class == x else SCATTERPLOT_COLOR)
     else:
-        colors = 'blue'
+        colors = SCATTERPLOT_COLOR
 
-    scatterplot['data'][0]['marker'] = dict(color=colors)
+    scatterplot['data'][0]['marker'] = {'color': colors}
 
     return scatterplot
 
