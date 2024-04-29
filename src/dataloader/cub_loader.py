@@ -6,11 +6,16 @@ import sys
 import pandas
 import wget
 import tarfile
+
+from PIL import Image
+from tqdm import tqdm
+
 from src import definitions
 
 DOWNLOAD_URL = 'https://data.caltech.edu/records/65de6-vp158/files/CUB_200_2011.tgz?download=1'
 TAR_FILE_PATH = os.path.join(definitions.DOWNLOADS_DIR, 'cub_dataset.tgz')
 TEMP_DIR = os.path.join(definitions.DATA_DIR, 'temp')
+IMAGES_SIZE = (120, 120)
 
 def download_data(tar_file_path):
 
@@ -37,10 +42,18 @@ def create_csv(images_dir):
         ]
     return pandas.DataFrame(data, columns=['class_id', 'class_name', 'image_path']).reset_index(names='image_id')
 
+def resize_images(images_dir):
+    for bird_dir_name in tqdm(os.listdir(images_dir)):
+        bird_dir = os.path.join(images_dir, bird_dir_name)
+        for image_name in os.listdir(bird_dir):
+            image_path = os.path.join(bird_dir, image_name)
+            image = Image.open(os.path.join(bird_dir, image_name))
+            image.thumbnail(IMAGES_SIZE)
+            image.save(image_path)
 
 def load():
-    if not os.path.isdir(definitions.ASSETS_DIR):
-        os.mkdir(definitions.ASSETS_DIR)
+    if not os.path.isdir(definitions.DATASET_DIR):
+        os.mkdir(definitions.DATASET_DIR)
     shutil.rmtree(definitions.DATA_DIR, ignore_errors=True)
     os.mkdir(definitions.DATA_DIR)
     if not os.path.isdir(definitions.DOWNLOADS_DIR):
@@ -56,6 +69,11 @@ def load():
     shutil.rmtree(TEMP_DIR)
     create_csv(definitions.IMAGES_DIR).to_csv(definitions.DATASET_PATH, index=False)
     print('Writing dataset to', definitions.DATASET_PATH)
+
+def cleanup():
+    print('Resizing images')
+    resize_images(definitions.IMAGES_DIR)
+
 
 if __name__ == '__main__':
     load()
