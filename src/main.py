@@ -15,14 +15,16 @@ from dash import Dash, html, dcc, Output, Input, callback, State
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 
-IMAGE_GALLERY_SIZE = 34
+IMAGE_GALLERY_SIZE = 36
 IMAGE_GALLERY_ROW_SIZE = 4
 
 WORDCLOUD_IMAGE_HEIGHT = 450
 WORDCLOUD_IMAGE_WIDTH = 600
 
-DEFAULT_PROJECTION = 'UMAP'
+SCATTERPLOT_COLOR = 'rgba(31, 119, 180, 0.5)'
+SCATTERPLOT_SELECTED_COLOR = 'red'
 
+DEFAULT_PROJECTION = 'UMAP'
 MAX_IMAGES_ON_SCATTERPLOT = 15
 
 
@@ -109,7 +111,7 @@ def table_row_is_clicked(scatterplot, selected_row):
     print('table_row_is_clicked')
     if selected_row:
         selected_class = selected_row[0]['class_id']
-        colors = Dataset.get()['class_id'].map(lambda x: 'red' if selected_class == x else 'blue')
+        colors = Dataset.get()['class_id'].map(lambda x: SCATTERPLOT_SELECTED_COLOR if selected_class == x else SCATTERPLOT_COLOR)
     else:
         colors = 'blue'
 
@@ -182,7 +184,7 @@ def radio_button_is_clicked(radio_button_value):
         x_col, y_col = 'umap_x', 'umap_y'
 
     fig = px.scatter(data_frame=Dataset.get(), x=x_col, y=y_col)
-    fig.update_traces(customdata=Dataset.get().index)
+    fig.update_traces(customdata=Dataset.get().index, marker={'color':SCATTERPLOT_COLOR})
     fig.update_layout(dragmode='select')
     fig.update_yaxes(scaleanchor="x", scaleratio=1)
 
@@ -227,13 +229,14 @@ def scatterplot_is_updated(selected_data):
                 break
             with open(image_paths[i + j], 'rb') as f:
                 image = f.read()
-            html_image = [
+            class_name = class_names[i + j]
+            html_image = [html.A([
                 html.Img(
                     src=encode_image(image),
                     className='gallery-image'
                 ),
-                html.Span(class_names[i + j], className='tooltip-text')
-            ]
+                html.Span(class_name, className='tooltip-text')
+            ], target="_blank", href=f'http://www.google.com/search?q={class_name.replace(" ", "+")}')]
             image_cols.append(dbc.Col(html_image, width=3, className='gallery-row'))
         image_rows.append(dbc.Row(image_cols))
 
