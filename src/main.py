@@ -29,7 +29,7 @@ MAX_IMAGES_ON_SCATTERPLOT = 15
 
 
 def run_ui():
-    external_stylesheets = [dbc.themes.CERULEAN]
+    external_stylesheets = [dbc.themes.BOOTSTRAP]
     app = Dash(__name__, external_stylesheets=external_stylesheets)
 
     projection_radio_buttons = dbc.RadioItems(
@@ -47,13 +47,13 @@ def run_ui():
             {"field": "total_count"}
         ],
         rowData=[],
-        columnSize="sizeToFit",
+        columnSize="responsiveSizeToFit",
         dashGridOptions={
             "rowSelection": "single",
             "pagination": True,
             "paginationAutoPageSize": True
         },
-        className='widget ag-theme-alpine',
+        className='stretchy-widget ag-theme-alpine',
         style={'width': '', 'height': ''},
         id='table'
     )
@@ -63,7 +63,8 @@ def run_ui():
     scatterplot = dcc.Graph(
         figure=scatterplot_figure,
         id='scatterplot',
-        className='widget',
+        className='stretchy-widget',
+        responsive=True,
         config={
             'displaylogo': False,
             'modeBarButtonsToRemove': ['resetScale'],
@@ -73,31 +74,27 @@ def run_ui():
 
     wordcloud_image = html.Img(
         id='wordcloud',
-        className='widget border-widget',
+        className='border-widget',
     )
 
     gallery_card = dbc.Card(
         [
             dbc.CardHeader(f'Sample of images from selection'),
-            dbc.CardBody([], id='gallery', className='gallery'),
+            dbc.CardBody([], id='gallery', className='gallery widget'),
         ],
-        className='widget border-widget')
+        className='stretchy-widget border-widget')
 
     app.layout = dbc.Container([
-        html.Div('Multimedia analytics demo', className='text-primary text-center fs-3 header'),
-        dbc.Stack([
-            html.Div('Projection: '),
-            projection_radio_buttons,
-        ], direction="horizontal"),
-        dbc.Stack([
-            scatterplot,
-            table
-        ], direction="horizontal"),
-        dbc.Stack([
-            wordcloud_image,
-            gallery_card
-        ], direction="horizontal"),
-    ])
+        projection_radio_buttons,
+        dbc.Row([
+            dbc.Col(scatterplot, width=True, className='main-col'),
+            dbc.Col(wordcloud_image, width='auto', align="center")],
+            className='g-10 main-row', justify='between'),
+        dbc.Row([
+            dbc.Col(table, className='main-col'),
+            dbc.Col(gallery_card, className='main-col')
+        ], className='g-10 main-row')
+    ], fluid=True, id='container')
     app.run(debug=True, use_reloader=False)
 
 
@@ -235,10 +232,10 @@ def scatterplot_is_updated(selected_data):
                     src=encode_image(image),
                     className='gallery-image'
                 ),
-                html.Span(class_name, className='tooltip-text')
+                html.Div(class_name, className='gallery-text')
             ], target="_blank", href=f'http://www.google.com/search?q={class_name.replace(" ", "+")}')]
-            image_cols.append(dbc.Col(html_image, width=3, className='gallery-row'))
-        image_rows.append(dbc.Row(image_cols))
+            image_cols.append(dbc.Col(html_image, className='gallery-col'))
+        image_rows.append(dbc.Row(image_cols, className='gallery-row'))
 
     return wordcloud_image, table_records, image_rows
 
