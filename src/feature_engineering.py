@@ -9,8 +9,8 @@ from sklearn.manifold import TSNE
 
 from src import definitions
 
-SAMPLE_SIZE = None
-#SAMPLE_SIZE = 1000
+#SAMPLE_SIZE = None
+SAMPLE_SIZE = 1000
 
 def calculate_clip_embeddings(dataset):
     model, preprocess = clip.load('ViT-B/32', device='cpu')
