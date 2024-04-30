@@ -25,7 +25,7 @@ SCATTERPLOT_COLOR = 'rgba(31, 119, 180, 0.5)'
 SCATTERPLOT_SELECTED_COLOR = 'red'
 
 DEFAULT_PROJECTION = 'UMAP'
-MAX_IMAGES_ON_SCATTERPLOT = 15
+MAX_IMAGES_ON_SCATTERPLOT = 100
 
 
 def run_ui():
@@ -215,7 +215,7 @@ def scatterplot_is_updated(selected_data):
     wc.to_image().save(img, format='PNG')
     wordcloud_image = encode_image(img.getvalue())
 
-    sample_data = selected_data.head(IMAGE_GALLERY_SIZE)
+    sample_data = selected_data.sample(min(len(selected_data), IMAGE_GALLERY_SIZE))
     image_paths = sample_data['image_path'].values
     class_names = sample_data['class_name'].values
     image_rows = []
@@ -235,7 +235,7 @@ def scatterplot_is_updated(selected_data):
                 html.Div(class_name, className='gallery-text')
             ], target="_blank", href=f'http://www.google.com/search?q={class_name.replace(" ", "+")}')]
             image_cols.append(dbc.Col(html_image, className='gallery-col'))
-        image_rows.append(dbc.Row(image_cols, className='gallery-row'))
+        image_rows.append(dbc.Row(image_cols, className='gallery-row', justify='start'))
 
     return wordcloud_image, table_records, image_rows
 
