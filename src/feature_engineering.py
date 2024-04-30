@@ -9,7 +9,8 @@ from sklearn.manifold import TSNE
 
 from src import definitions
 
-SAMPLE_SIZE = 1000
+SAMPLE_SIZE = None
+#SAMPLE_SIZE = 1000
 
 def calculate_clip_embeddings(dataset):
     model, preprocess = clip.load('ViT-B/32', device='cpu')
@@ -37,7 +38,7 @@ def calculate_tsne(clip_embeddings):
 
 def generate_projection_data():
     dataset = pandas.read_csv(definitions.DATASET_PATH)
-    dataset_sample = dataset.sample(n=SAMPLE_SIZE, random_state=1)
+    dataset_sample = dataset.sample(n=SAMPLE_SIZE, random_state=1) if SAMPLE_SIZE else dataset
     print('Calculating clip embeddings')
     clip_embeddings = calculate_clip_embeddings(dataset_sample)
     umap_x, umap_y = calculate_umap(clip_embeddings)
