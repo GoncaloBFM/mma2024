@@ -21,7 +21,7 @@ def run_ui():
     gallery_widget = gallery.create_gallery()
     placeholder_widget = placeholder.create_placeholder()
 
-    tabs = dcc.Tabs([
+    left_tab = dcc.Tabs([
         dcc.Tab(label='table', children=[table_widget]),
         dcc.Tab(label='placeholder', children=placeholder_widget)
     ])
@@ -36,7 +36,7 @@ def run_ui():
             dbc.Col(wordcloud_widget, width='auto', align="center")],
             className='g-10 main-row', justify='between'),
         dbc.Row([
-            dbc.Col(tabs, className='main-col', width=6),
+            dbc.Col(left_tab, className='main-col', width=6),
             dbc.Col(gallery_widget, className='main-col', width=6)
         ], className='g-10 main-row')
     ], fluid=True, id='container')
