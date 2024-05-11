@@ -15,7 +15,7 @@ from src.widgets import wordcloud, gallery, scatterplot
     [Input('scatterplot', 'selectedData'),
     Input("grid", "selectedRows")]
 )
-def data_is_filtered(scatterplot_fig, scatterplot_selection, current_row_data, table_selection):
+def data_is_filtered(scatterplot_fig, scatterplot_selection, table_selection):
     print('Data is filtered using', dash.ctx.triggered_id)
 
     data_selected = get_data_selected_on_scatterplot(scatterplot_fig)
