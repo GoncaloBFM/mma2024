@@ -1,7 +1,7 @@
 from dash import Dash, html, dcc
 from src import config
 from src.Dataset import Dataset
-from src.widgets import projection_radio_buttons, gallery, scatterplot, wordcloud, left_tab_radio_buttons, placeholder
+from src.widgets import projection_radio_buttons, gallery, scatterplot, wordcloud, placeholder
 from src.widgets.table import create_table
 import dash_bootstrap_components as dbc
 
@@ -9,14 +9,12 @@ import callbacks.table
 import callbacks.scatterplot
 import callbacks.projection_radio_buttons
 import callbacks.data_is_filtered
-#import callbacks.left_tab_radio_buttons
 
 def run_ui():
     external_stylesheets = [dbc.themes.BOOTSTRAP]
     app = Dash(__name__, external_stylesheets=external_stylesheets)
 
     projection_radio_buttons_widget = projection_radio_buttons.create_projection_radio_buttons()
-    #left_tab_radio_buttons_widget = left_tab_radio_buttons.create_left_tab_radio_buttons()
     table_widget = create_table()
     scatterplot_widget = scatterplot.create_scatterplot(config.DEFAULT_PROJECTION)
     wordcloud_widget = wordcloud.create_wordcloud()
@@ -30,14 +28,7 @@ def run_ui():
 
     app.layout = dbc.Container([
         html.Div(
-            dbc.Stack(
-                [
-                    projection_radio_buttons_widget,
-                    #left_tab_radio_buttons_widget
-                ],
-                direction='horizontal',
-                gap=3,
-                id='header-stack'),
+            projection_radio_buttons_widget,
             id='header'
         ),
         dbc.Row([
