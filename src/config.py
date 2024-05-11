@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 # ui configuration
-IMAGE_GALLERY_SIZE = 36
+IMAGE_GALLERY_SIZE = 22
 IMAGE_GALLERY_ROW_SIZE = 4
 
 WORDCLOUD_IMAGE_HEIGHT = 450

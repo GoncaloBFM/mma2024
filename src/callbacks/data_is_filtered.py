@@ -49,6 +49,7 @@ def data_is_filtered(scatterplot_fig, scatterplot_selection, table_selection):
 
     return wordcloud_image, table_rows, gallery_children, scatterplot_fig
 
+
 def get_data_selected_on_scatterplot(scatterplot_fig):
     scatterplot_fig_data = scatterplot_fig['data'][0]
 
