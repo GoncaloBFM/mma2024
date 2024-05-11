@@ -3,14 +3,33 @@
     border: 1px solid #babfc7;
 }
 
-#projection-radio-buttons {
+#header {
     font-family: sans-serif;
     font-weight: bold;
     font-size: 20px;
-    position:absolute;
     top: 15px;
     float: left;
     display: inline;
+    position: absolute;
+}
+
+.tab-content{
+    height: 100%;
+}
+
+.tab-parent{
+    height: 100%;
+}
+
+.radio-buttons{
+    font-family: sans-serif;
+    font-weight: bold;
+    font-size: 20px;
+    display: inline;
+}
+
+#left-tab-radio-buttons{
+    margin-left: 16px;
 }
 
 #container {
@@ -66,4 +85,3 @@ html, body {
     margin: 0;
     padding: 0;
 }
-

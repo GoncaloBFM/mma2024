@@ -7,10 +7,9 @@ import numpy
 from umap import UMAP
 from sklearn.manifold import TSNE
 
-from src import definitions
+from src import config
 
-#SAMPLE_SIZE = None
-SAMPLE_SIZE = 1000
+
 
 def calculate_clip_embeddings(dataset):
     model, preprocess = clip.load('ViT-B/32', device='cpu')
@@ -37,8 +36,8 @@ def calculate_tsne(clip_embeddings):
 
 
 def generate_projection_data():
-    dataset = pandas.read_csv(definitions.DATASET_PATH)
-    dataset_sample = dataset.sample(n=SAMPLE_SIZE, random_state=1) if SAMPLE_SIZE else dataset
+    dataset = pandas.read_csv(config.DATASET_PATH)
+    dataset_sample = dataset.sample(n=config.DATASET_SAMPLE_SIZE, random_state=1) if config.DATASET_SAMPLE_SIZE else dataset
     print('Calculating clip embeddings')
     clip_embeddings = calculate_clip_embeddings(dataset_sample)
     umap_x, umap_y = calculate_umap(clip_embeddings)
@@ -46,8 +45,8 @@ def generate_projection_data():
     tsne_x, tsne_y = calculate_tsne(clip_embeddings)
     print('Calculating tsne')
     augmented_dataset = dataset_sample.assign(umap_x=umap_x, umap_y=umap_y, tsne_x=tsne_x, tsne_y=tsne_y)
-    augmented_dataset.to_csv(definitions.AUGMENTED_DATASET_PATH, index=False)
-    print('Saving augmented dataset to', definitions.AUGMENTED_DATASET_PATH)
+    augmented_dataset.to_csv(config.AUGMENTED_DATASET_PATH, index=False)
+    print('Saving augmented dataset to', config.AUGMENTED_DATASET_PATH)
 
 
 if __name__ == '__main__':

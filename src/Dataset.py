@@ -2,16 +2,16 @@ import os
 
 import pandas
 
-from src import definitions, feature_engineering
+from src import config, feature_engineering
 from src.dataloader import cub_loader
 
 
 class Dataset:
-    dataset = None
+    data = None
     count = None
     @staticmethod
     def load():
-        Dataset.data = pandas.read_csv(definitions.AUGMENTED_DATASET_PATH, index_col='image_id')
+        Dataset.data = pandas.read_csv(config.AUGMENTED_DATASET_PATH, index_col='image_id')
         Dataset.count = Dataset.data['class_id'].value_counts()
 
     @staticmethod
@@ -24,7 +24,7 @@ class Dataset:
 
     @staticmethod
     def files_exist():
-        return os.path.isfile(definitions.AUGMENTED_DATASET_PATH) and os.path.isdir(definitions.IMAGES_DIR)
+        return os.path.isfile(config.AUGMENTED_DATASET_PATH) and os.path.isdir(config.IMAGES_DIR)
 
     @staticmethod
     def download():
