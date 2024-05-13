@@ -1,6 +1,6 @@
 import networkx as nx
 import plotly.graph_objects as go
-
+import dash.html
 from dash import dcc
 
 from src.Dataset import Dataset
@@ -16,16 +16,25 @@ def create_graph(selected_rows=None):
 
 def draw_graph(selected_rows):
     if not selected_rows or len(selected_rows) == 0:
-        G = nx.Graph()
-        
-        layout = go.Layout(
-            showlegend=False,
-            hovermode='closest',
-            margin=dict(b=0, l=0, r=0, t=40),
+        fig = go.Figure()
+
+        # Add only layout information
+        fig.update_layout(
             xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)
+            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            annotations=[
+                dict(
+                    text="Click the table",
+                    xref="paper",
+                    yref="paper",
+                    showarrow=False,
+                    font=dict(size=28, color="gray")
+                )
+            ],
+            margin=dict(b=0, l=0, r=0, t=40)  # Adjust margins to ensure the text is visible
         )
-        return go.Figure(data=[], layout=layout)
+
+        return fig
 
     bird_classes = [bird_details["class_name"] for bird_details in selected_rows] # selected_rows[0]["class_name"]
     bird_species = [bird_class.split(" ")[-1] for bird_class in bird_classes] # bird_class.split(" ")[-1]
