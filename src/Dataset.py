@@ -13,6 +13,7 @@ class Dataset:
     def load():
         Dataset.data = pandas.read_csv(config.AUGMENTED_DATASET_PATH, index_col='image_id')
         Dataset.count = Dataset.data['class_id'].value_counts()
+        Dataset.data['species_name'] = Dataset.data['class_name'].apply(lambda x: x.split()[-1])
 
     @staticmethod
     def get():

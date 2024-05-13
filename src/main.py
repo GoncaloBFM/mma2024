@@ -1,7 +1,7 @@
 from dash import Dash, html, dcc
 from src import config
 from src.Dataset import Dataset
-from src.widgets import projection_radio_buttons, gallery, scatterplot, wordcloud, placeholder
+from src.widgets import projection_radio_buttons, gallery, scatterplot, wordcloud, placeholder, graph
 from src.widgets.table import create_table
 import dash_bootstrap_components as dbc
 
@@ -20,10 +20,16 @@ def run_ui():
     wordcloud_widget = wordcloud.create_wordcloud()
     gallery_widget = gallery.create_gallery()
     placeholder_widget = placeholder.create_placeholder()
+    graph_widget = graph.create_graph()
 
     left_tab = dcc.Tabs([
         dcc.Tab(label='table', children=[table_widget]),
         dcc.Tab(label='placeholder', children=placeholder_widget)
+    ])
+
+    right_tab = dcc.Tabs([
+        dcc.Tab(label='gallery', children=[gallery_widget]),
+        dcc.Tab(label='graph', children=graph_widget) # to be replaced with graph widget
     ])
 
     app.layout = dbc.Container([
@@ -37,7 +43,7 @@ def run_ui():
             className='g-10 main-row', justify='between'),
         dbc.Row([
             dbc.Col(left_tab, className='main-col', width=6),
-            dbc.Col(gallery_widget, className='main-col', width=6)
+            dbc.Col(right_tab, className='main-col', width=6)
         ], className='g-10 main-row')
     ], fluid=True, id='container')
 
