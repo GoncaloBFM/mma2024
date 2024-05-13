@@ -23,13 +23,13 @@ def run_ui():
     graph_widget = graph.create_graph()
 
     left_tab = dcc.Tabs([
-        dcc.Tab(label='table', children=[table_widget]),
+        dcc.Tab(label='table', children=table_widget),
         dcc.Tab(label='placeholder', children=placeholder_widget)
     ])
 
     right_tab = dcc.Tabs([
-        dcc.Tab(label='gallery', children=[gallery_widget]),
-        dcc.Tab(label='graph', children=graph_widget) # to be replaced with graph widget
+        dcc.Tab(label='sample images', children=gallery_widget),
+        dcc.Tab(label='graph', children=graph_widget)
     ])
 
     app.layout = dbc.Container([

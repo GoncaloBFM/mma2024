@@ -6,13 +6,7 @@ from src.utils import encode_image
 
 
 def create_gallery():
-    return dbc.Card(
-        [
-            dbc.CardHeader(f'Sample of images from selection'),
-            dbc.CardBody([], id='gallery', className='gallery widget'),
-        ],
-        className='stretchy-widget border-widget'
-    )
+    return dbc.Container([], id='gallery', className='stretchy-widget border-widget gallery')
 
 
 def create_gallery_children(image_paths, class_names):
@@ -32,7 +26,7 @@ def create_gallery_children(image_paths, class_names):
                 ),
                 html.Div(class_name, className='gallery-text')
             ], target="_blank", href=f'http://www.google.com/search?q={class_name.replace(" ", "+")}')]
-            image_cols.append(dbc.Col(html_image, className='gallery-col'))
+            image_cols.append(dbc.Col(html_image, className='gallery-col', width=3))
         image_rows.append(dbc.Row(image_cols, className='gallery-row', justify='start'))
 
     return image_rows

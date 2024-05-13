@@ -15,6 +15,7 @@
 
 .tab-content{
     height: 100%;
+    display: contents;
 }
 
 .tab-parent{
@@ -64,6 +65,8 @@
 
 .gallery-image{
     border: 2px solid #636363;
+    width: 100px;
+    height: 100px;
 }
 
 .gallery-col {
