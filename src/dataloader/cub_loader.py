@@ -32,17 +32,15 @@ def extract_data(tar_file_path, dataset_dir):
 
 
 def create_csv(images_dir):
+    images = pandas.read_csv(os.path.join(TEMP_DIR, 'CUB_200_2011', 'images.txt'), names=['image_id', 'image_path'], sep=' ')
     data = []
-    for bird_dir in os.listdir(images_dir):
-        raw_bird_class_id, raw_bird_type = bird_dir.split('.')
+    for _, row in images.iterrows():
+        raw_bird_class_id, raw_bird_type = row['image_path'].split('/')[0].split('.')
+        image_id = row['image_id']
         bird_class_id = int(raw_bird_class_id)
         bird_type = raw_bird_type.replace('_', ' ')
-        bird_images = os.listdir(os.path.join(images_dir, bird_dir))
-        data += [
-            [bird_class_id, bird_type, os.path.join(images_dir, bird_dir, image_name)]
-            for image_name in bird_images
-        ]
-    return pandas.DataFrame(data, columns=['class_id', 'class_name', 'image_path']).reset_index(names='image_id')
+        data.append([image_id, bird_class_id, bird_type, os.path.join(images_dir, row['image_path'])])
+    return pandas.DataFrame(data, columns=['image_id', 'class_id', 'class_name', 'image_path'])
 
 
 def resize_images(images_dir):
@@ -70,8 +68,8 @@ def load():
     print('Extracting data')
     extract_data(TAR_FILE_PATH, TEMP_DIR)
     shutil.move(os.path.join(TEMP_DIR, 'CUB_200_2011', 'images'), config.IMAGES_DIR)
-    shutil.rmtree(TEMP_DIR)
     create_csv(config.IMAGES_DIR).to_csv(config.DATASET_PATH, index=False)
+    shutil.rmtree(TEMP_DIR)
     print('Writing dataset to', config.DATASET_PATH)
 
 
