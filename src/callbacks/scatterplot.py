@@ -3,7 +3,7 @@ from PIL import Image
 from src import config
 
 from src.Dataset import Dataset
-from src.widgets import table, scatterplot, graph
+from src.widgets import table, scatterplot, graph, heatmap
 
 
 @callback(
@@ -59,6 +59,7 @@ def scatterplot_is_zoomed(scatterplot_fig, zoom_data):
 
 @callback(
     Output("grid", "rowData"),
+    Output("heatmap", "figure"),
     State('scatterplot', 'figure'),
     Input("scatterplot", "selectedData"),
 )
@@ -76,6 +77,8 @@ def scatterplot_is_selected(scatterplot_fig, data_selected):
     table_rows = group_by_count.sort_values('count_in_selection', ascending=False).to_dict("records")
     scatterplot.highlight_class_on_scatterplot(scatterplot_fig, None)
 
-    return table_rows
+    heatmap_fig = heatmap.draw_heatmap_figure(data_selected)
+
+    return table_rows, heatmap_fig
 
 

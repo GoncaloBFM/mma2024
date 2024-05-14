@@ -8,12 +8,8 @@ import dash_bootstrap_components as dbc
 import callbacks.table
 import callbacks.scatterplot
 import callbacks.projection_radio_buttons
-<<<<<<< HEAD
-import callbacks.data_is_filtered
 import callbacks.heatmap
-=======
 import callbacks.wordcloud
->>>>>>> v2
 
 def run_ui():
     external_stylesheets = [dbc.themes.BOOTSTRAP]
@@ -34,14 +30,9 @@ def run_ui():
     ])
 
     right_tab = dcc.Tabs([
-<<<<<<< HEAD
-        dcc.Tab(label='gallery', children=[gallery_widget]),
-        dcc.Tab(label='graph', children=graph_widget), # to be replaced with graph widget
-        dcc.Tab(label='heatmap', children=[heatmap_widget])
-=======
         dcc.Tab(label='sample images', children=gallery_widget),
-        dcc.Tab(label='graph', children=graph_widget)
->>>>>>> v2
+        dcc.Tab(label='graph', children=graph_widget), 
+        dcc.Tab(label='heatmap', children=[heatmap_widget])
     ])
 
     app.layout = dbc.Container([
