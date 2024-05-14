@@ -29,4 +29,4 @@ DOWNLOADS_DIR = os.path.join(DATASET_DIR, 'downloads')
 DATASET_PATH = os.path.join(DATA_DIR, 'dataset.csv')
 IMAGES_DIR = os.path.join(DATA_DIR, 'images')
 AUGMENTED_DATASET_PATH = os.path.join(DATA_DIR, 'augmented_dataset.csv')
-
+ATTRIBUTE_DATA_PATH = os.path.join(DATA_DIR, 'image_attributes.csv')
