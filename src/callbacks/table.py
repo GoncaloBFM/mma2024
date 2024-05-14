@@ -37,7 +37,11 @@ def table_row_is_selected(scatterplot_fig, selected_rows, added_rows):
         graph_fig = graph.draw_graph(selected_rows)
     else:
         graph_fig = graph.draw_graph(None)
-        wordcloud_data = list(zip(data_selected['class_name'].values, Dataset.class_count().loc[data_selected['class_id']].values))
+        group_by_count = (data_selected.groupby(['class_id', 'class_name'])['class_id']
+                          .agg('count')
+                          .to_frame('count_in_selection')
+                          .reset_index())
+        wordcloud_data = group_by_count[['class_name', 'count_in_selection']].values
         scatterplot.highlight_class_on_scatterplot(scatterplot_fig, None)
 
     sample_data = data_selected.sample(min(len(data_selected), config.IMAGE_GALLERY_SIZE), random_state=1)
