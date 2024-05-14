@@ -2,6 +2,8 @@ import dash_ag_grid
 from dash import dcc
 import dash_bootstrap_components as dbc
 
+from src.Dataset import Dataset
+
 
 def create_table():
     return dbc.Stack([
@@ -27,7 +29,7 @@ def create_table_grid():
         rowData=[],
         columnSize="responsiveSizeToFit",
         dashGridOptions={
-            "pagination": True,
+            "pagination": False,
             "paginationAutoPageSize": True,
             "suppressCellFocus": True,
             "rowSelection": "multiple",

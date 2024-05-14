@@ -40,5 +40,15 @@ def create_scatterplot(projection):
             }
         )
 
+def get_data_selected_on_scatterplot(scatterplot_fig):
+    scatterplot_fig_data = scatterplot_fig['data'][0]
+
+    if 'selectedpoints' in scatterplot_fig_data:
+        selected_image_ids = list(map(scatterplot_fig_data['customdata'].__getitem__, scatterplot_fig_data['selectedpoints']))
+        data_selected = Dataset.get().loc[selected_image_ids]
+    else:
+        data_selected = Dataset.get()
+
+    return data_selected
 
 

@@ -3,6 +3,7 @@ from PIL import Image
 from src import config
 
 from src.Dataset import Dataset
+from src.widgets import table, scatterplot, graph
 
 
 @callback(
@@ -20,7 +21,7 @@ def scatterplot_is_zoomed(scatterplot_fig, zoom_data):
     if 'xaxis.range[0]' not in zoom_data:
         return scatterplot_fig
 
-    print('scatter_plot_is_zoomed')
+    print('Scatterplot is zoomed')
     scatterplot_data = scatterplot_fig['data'][0]
     scatter_image_ids = scatterplot_data['customdata']
     scatter_x = scatterplot_data['x']
@@ -54,5 +55,27 @@ def scatterplot_is_zoomed(scatterplot_fig, zoom_data):
         return scatterplot_fig
 
     return scatterplot_fig
+
+
+@callback(
+    Output("grid", "rowData"),
+    State('scatterplot', 'figure'),
+    Input("scatterplot", "selectedData"),
+)
+def scatterplot_is_selected(scatterplot_fig, data_selected):
+    print('Scatterplot is selected')
+
+    data_selected = scatterplot.get_data_selected_on_scatterplot(scatterplot_fig)
+    scatterplot_fig['layout']['images'] = []
+
+    group_by_count = (data_selected.groupby(['class_id', 'class_name'])['class_id']
+                          .agg('count')
+                          .to_frame('count_in_selection')
+                          .reset_index())
+    group_by_count['total_count'] = Dataset.class_count().loc[group_by_count['class_id']].values
+    table_rows = group_by_count.sort_values('count_in_selection', ascending=False).to_dict("records")
+    scatterplot.highlight_class_on_scatterplot(scatterplot_fig, None)
+
+    return table_rows
 
 

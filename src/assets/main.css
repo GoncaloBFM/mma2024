@@ -88,3 +88,17 @@ html, body {
     margin: 0;
     padding: 0;
 }
+
+.wc-canvas-hover-label {
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0);
+    color: rgba(0, 0, 0, 0);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    display: none;
+}
+
+.wc-canvas-hover{
+    border: 1px solid rgba(100, 100, 100, 1);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    display: none;
+}

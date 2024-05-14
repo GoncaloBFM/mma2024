@@ -8,7 +8,7 @@ import dash_bootstrap_components as dbc
 import callbacks.table
 import callbacks.scatterplot
 import callbacks.projection_radio_buttons
-import callbacks.data_is_filtered
+import callbacks.wordcloud
 
 def run_ui():
     external_stylesheets = [dbc.themes.BOOTSTRAP]
