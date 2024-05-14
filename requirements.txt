@@ -10,3 +10,4 @@ dash-core-components
 umap-learn
 scikit-learn
 wget
+dash-holoniq-wordcloud
