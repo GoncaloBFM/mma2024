@@ -45,6 +45,15 @@
     float: right;
 }
 
+#heatmap {
+    position: relative; 
+}
+
+#heatmap-container {
+    overflow: scroll; 
+    position: relative;
+}
+
 .main-col {
     height: 100%;
 }

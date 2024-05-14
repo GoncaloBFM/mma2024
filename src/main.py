@@ -1,7 +1,7 @@
 from dash import Dash, html, dcc
 from src import config
 from src.Dataset import Dataset
-from src.widgets import projection_radio_buttons, gallery, scatterplot, wordcloud, placeholder, graph
+from src.widgets import projection_radio_buttons, gallery, scatterplot, wordcloud, placeholder, graph, heatmap
 from src.widgets.table import create_table
 import dash_bootstrap_components as dbc
 
@@ -9,6 +9,7 @@ import callbacks.table
 import callbacks.scatterplot
 import callbacks.projection_radio_buttons
 import callbacks.data_is_filtered
+import callbacks.heatmap
 
 def run_ui():
     external_stylesheets = [dbc.themes.BOOTSTRAP]
@@ -21,6 +22,7 @@ def run_ui():
     gallery_widget = gallery.create_gallery()
     placeholder_widget = placeholder.create_placeholder()
     graph_widget = graph.create_graph()
+    heatmap_widget = heatmap.create_heatmap()
 
     left_tab = dcc.Tabs([
         dcc.Tab(label='table', children=[table_widget]),
@@ -29,7 +31,8 @@ def run_ui():
 
     right_tab = dcc.Tabs([
         dcc.Tab(label='gallery', children=[gallery_widget]),
-        dcc.Tab(label='graph', children=graph_widget) # to be replaced with graph widget
+        dcc.Tab(label='graph', children=graph_widget), # to be replaced with graph widget
+        dcc.Tab(label='heatmap', children=[heatmap_widget])
     ])
 
     app.layout = dbc.Container([
@@ -52,7 +55,7 @@ def run_ui():
 
 def main():
     if not Dataset.files_exist():
-        print('File', config.AUGMENTED_DATASET_PATH, 'missing or directory', config.IMAGES_DIR, 'missing')
+        print('File', config.AUGMENTED_DATASET_PATH, 'missing or file', config.ATTRIBUTE_DATA_PATH, 'missing or directory', config.IMAGES_DIR, 'missing')
         print('Creating dataset.')
         Dataset.download()
 

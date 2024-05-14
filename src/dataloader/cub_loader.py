@@ -43,6 +43,28 @@ def create_csv(images_dir):
     return pandas.DataFrame(data, columns=['image_id', 'class_id', 'class_name', 'image_path'])
 
 
+def create_attr_csv(): 
+    with open(os.path.join(TEMP_DIR, 'attributes.txt'), 'r') as f: 
+        attribute_names = f.readlines()
+    attribute_names = [line.strip().split()[1] for line in attribute_names]
+    attribute_names = [name.replace('_', ' ').replace('::', ': ') for name in attribute_names]
+
+    with open(os.path.join(TEMP_DIR, 'CUB_200_2011', 'attributes', 'image_attribute_labels.txt'), 'r') as f: 
+        attribute_data = f.readlines()
+    attribute_data = [[int(item) for item in line.strip().split(' ')[:4]] for line in attribute_data]
+
+    image_ids = {line[0] for line in attribute_data}
+    image_attributes = {image_id: [0]*312 for image_id in image_ids}
+    for line in attribute_data: 
+        image_attributes[line[0]][line[1]-1] = line[3]-1 if line[2] else 0
+
+    image_attributes = pandas.DataFrame.from_dict(image_attributes, orient='index')
+    image_attributes.columns = attribute_names
+    image_attributes = image_attributes.reset_index(names='image_id')
+
+    return image_attributes
+
+
 def resize_images(images_dir):
     for bird_dir_name in tqdm(os.listdir(images_dir)):
         bird_dir = os.path.join(images_dir, bird_dir_name)
@@ -69,8 +91,10 @@ def load():
     extract_data(TAR_FILE_PATH, TEMP_DIR)
     shutil.move(os.path.join(TEMP_DIR, 'CUB_200_2011', 'images'), config.IMAGES_DIR)
     create_csv(config.IMAGES_DIR).to_csv(config.DATASET_PATH, index=False)
-    shutil.rmtree(TEMP_DIR)
     print('Writing dataset to', config.DATASET_PATH)
+    create_attr_csv().to_csv(config.ATTRIBUTE_DATA_PATH, index=False)
+    print('Writing attribute data to', config.ATTRIBUTE_DATA_PATH)
+    shutil.rmtree(TEMP_DIR)
 
 
 def cleanup():

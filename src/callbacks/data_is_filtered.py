@@ -3,7 +3,7 @@ from dash import Input, Output, State, callback
 
 from src import config
 from src.Dataset import Dataset
-from src.widgets import wordcloud, gallery, scatterplot, graph
+from src.widgets import wordcloud, gallery, scatterplot, graph, heatmap
 
 
 @callback(
@@ -11,7 +11,8 @@ from src.widgets import wordcloud, gallery, scatterplot, graph
      Output("grid", "rowData"),
      Output("gallery", "children"),
      Output('scatterplot', 'figure'),
-     Output("graph", "figure")],
+     Output("graph", "figure"), 
+     Output("heatmap", "figure")],
     State('scatterplot', 'figure'),
     [Input('scatterplot', 'selectedData'),
     Input("grid", "selectedRows")]
@@ -50,7 +51,9 @@ def data_is_filtered(scatterplot_fig, scatterplot_selection, table_selection):
     sample_data = data_selected.sample(min(len(data_selected), config.IMAGE_GALLERY_SIZE), random_state=1)
     gallery_children = gallery.create_gallery_children(sample_data['image_path'].values, sample_data['class_name'].values)
 
-    return wordcloud_image, table_rows, gallery_children, scatterplot_fig, graph_fig
+    heatmap_fig = heatmap.draw_heatmap_figure(data_selected)
+
+    return wordcloud_image, table_rows, gallery_children, scatterplot_fig, graph_fig, heatmap_fig
 
 
 def get_data_selected_on_scatterplot(scatterplot_fig):
