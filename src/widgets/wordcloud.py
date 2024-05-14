@@ -1,8 +1,3 @@
-from io import BytesIO
-
-from dash import html
-from wordcloud import WordCloud
-from src.utils import encode_image
 from src import config
 from dash_holoniq_wordcloud import DashWordcloud
 

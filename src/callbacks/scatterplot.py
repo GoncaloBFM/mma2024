@@ -1,9 +1,9 @@
-from dash import callback, Output, Input, State, dash, html
+from dash import callback, Output, Input, State, dash
 from PIL import Image
 from src import config
 
 from src.Dataset import Dataset
-from src.widgets import table, scatterplot, graph, heatmap
+from src.widgets import scatterplot, heatmap
 
 
 @callback(

@@ -1,6 +1,5 @@
 import networkx as nx
 import plotly.graph_objects as go
-import dash.html
 from dash import dcc
 
 from src.Dataset import Dataset

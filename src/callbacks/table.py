@@ -1,8 +1,7 @@
 from dash import Output, Input, callback, Patch, State
 
 from src import config
-from src.Dataset import Dataset
-from src.widgets import table, graph, wordcloud, gallery, scatterplot
+from src.widgets import graph, gallery, scatterplot
 
 
 @callback(

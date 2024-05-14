@@ -1,9 +1,5 @@
 from dash import Input, Output, callback, State
 
-from src.Dataset import Dataset
-from src.widgets import scatterplot
-
-
 @callback(
     Output("grid", "selectedRows"),
     State('scatterplot', 'figure'),

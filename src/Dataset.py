@@ -9,6 +9,7 @@ from src.dataloader import cub_loader
 class Dataset:
     data = None
     count = None
+    attr_data = None
     @staticmethod
     def load():
         Dataset.data = pandas.read_csv(config.AUGMENTED_DATASET_PATH, index_col='image_id')
