@@ -1,4 +1,5 @@
 from dash import Output, Input, callback, Patch, State
+from dash.exceptions import PreventUpdate
 
 from src import config
 from src.widgets import graph, gallery, scatterplot
@@ -23,6 +24,9 @@ def table_filter_is_updated(filter_value):
     Input("grid", "rowData")],
 )
 def table_row_is_selected(scatterplot_fig, selected_rows, added_rows):
+    if type(selected_rows) is dict:
+        raise PreventUpdate()
+
     print('Table row selected')
 
     data_selected = scatterplot.get_data_selected_on_scatterplot(scatterplot_fig)
@@ -47,4 +51,3 @@ def table_row_is_selected(scatterplot_fig, selected_rows, added_rows):
     gallery_children = gallery.create_gallery_children(sample_data['image_path'].values, sample_data['class_name'].values)
 
     return wordcloud_data, gallery_children, scatterplot_fig, graph_fig
-
