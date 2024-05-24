@@ -24,7 +24,6 @@ def draw_histogram(selected_data):
     if selected_data is None or len(selected_data) == 0:
         fig = go.Figure()
 
-    # Add only layout information
         fig.update_layout(
             xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
             yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
@@ -58,22 +57,28 @@ def draw_histogram(selected_data):
             side='top', 
             tickangle=280, 
             automargin=False, 
-            fixedrange=True
+            fixedrange=True,
+            # title_text="class_name",
+            tickfont=dict(size=8) 
         ),
         yaxis=dict(
-            visible=False, 
+            visible=True, 
             automargin=False, 
-            fixedrange=True
+            fixedrange=True,
+            title=dict(text="Frequency", standoff=10),
+            tickfont=dict(size=7) 
         ), 
+        
         # title={'text': 'Histogram of Sample Data', 'y': 0.1, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'},
 
-        margin=dict(l=50, r=50, t=150, b=150))
+        margin=dict(l=30, r=30, t=150, b=160))
+    
     
     return fig
 
-def create_histogram_children(image_paths, class_names):
-    with open(image_paths[0], 'rb') as f:
-                image = f.read()
-    return image
+# def create_histogram_children(image_paths, class_names):
+#     with open(image_paths[0], 'rb') as f:
+#                 image = f.read()
+#     return image
 
 
