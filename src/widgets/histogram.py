@@ -8,14 +8,15 @@ from src.Dataset import Dataset
 def create_histogram(selected_data=None):
     histogram = draw_histogram(selected_data)
     return html.Div([
-        dcc.Graph(figure=histogram, 
-                config={
-                    'displaylogo': False,
-                    'modeBarButtonsToRemove': ['zoom', 'pan', 'zoomIn', 'zoomOut', 'autoScale', 'resetScale']
-                }, 
-                id='histogram', 
-                clear_on_unhover=True),
-        dcc.Tooltip(id="histogram-tooltip", 
+        dcc.Graph(figure=histogram,
+                  responsive=True,
+                  config={
+                      'displaylogo': False,
+                      'modeBarButtonsToRemove': ['zoom', 'pan', 'zoomIn', 'zoomOut', 'autoScale', 'resetScale']
+                  },
+                  id='histogram',
+                  clear_on_unhover=True),
+        dcc.Tooltip(id="histogram-tooltip",
                     loading_text="LOADING"),
     ], className='border-widget stretchy-widget', id='histogram-container')
 
@@ -59,7 +60,7 @@ def draw_histogram(selected_data):
             automargin=False, 
             fixedrange=True,
             # title_text="class_name",
-            tickfont=dict(size=8) 
+            tickfont=dict(size=12)
         ),
         yaxis=dict(
             visible=True, 
@@ -69,16 +70,9 @@ def draw_histogram(selected_data):
             tickfont=dict(size=7) 
         ), 
         
-        # title={'text': 'Histogram of Sample Data', 'y': 0.1, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'},
-
-        margin=dict(l=30, r=30, t=150, b=160))
+        margin=dict(l=30, r=30, t=150, b=0))
     
     
     return fig
-
-# def create_histogram_children(image_paths, class_names):
-#     with open(image_paths[0], 'rb') as f:
-#                 image = f.read()
-#     return image
 
 

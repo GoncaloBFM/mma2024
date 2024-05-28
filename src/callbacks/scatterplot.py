@@ -60,7 +60,6 @@ def scatterplot_is_zoomed(scatterplot_fig, zoom_data):
 @callback(
     Output("grid", "rowData"),
     Output("heatmap", "figure"), 
-    Output("histogram", "figure"),
     State('scatterplot', 'figure'),
     Input("scatterplot", "selectedData"),
 )
@@ -79,9 +78,7 @@ def scatterplot_is_selected(scatterplot_fig, data_selected):
     scatterplot.highlight_class_on_scatterplot(scatterplot_fig, None)
 
     heatmap_fig = heatmap.draw_heatmap_figure(data_selected)
-    histogram_fig= histogram.draw_histogram(selected_data=data_selected)
 
-    return table_rows, heatmap_fig,histogram_fig
-    # return table_rows, histogram_fig
+    return table_rows, heatmap_fig
 
 

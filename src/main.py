@@ -1,7 +1,7 @@
 from dash import Dash, html, dcc
 from src import config
 from src.Dataset import Dataset
-from src.widgets import projection_radio_buttons, gallery, scatterplot, wordcloud, placeholder, graph, heatmap,histogram
+from src.widgets import projection_radio_buttons, gallery, scatterplot, wordcloud, graph, heatmap,histogram
 from src.widgets.table import create_table
 import dash_bootstrap_components as dbc
 
@@ -10,7 +10,7 @@ import callbacks.scatterplot
 import callbacks.projection_radio_buttons
 import callbacks.heatmap
 import callbacks.wordcloud
-# import callbacks.histogram
+import callbacks.histogram
 
 def run_ui():
     external_stylesheets = [dbc.themes.BOOTSTRAP]
@@ -21,20 +21,18 @@ def run_ui():
     scatterplot_widget = scatterplot.create_scatterplot(config.DEFAULT_PROJECTION)
     wordcloud_widget = wordcloud.create_wordcloud()
     gallery_widget = gallery.create_gallery()
-    # placeholder_widget = placeholder.create_placeholder()
     graph_widget = graph.create_graph()
     heatmap_widget = heatmap.create_heatmap()
-    histogram_widget= histogram.create_histogram()
+    histogram_widget = histogram.create_histogram()
 
     left_tab = dcc.Tabs([
         dcc.Tab(label='table', children=table_widget),
-        # dcc.Tab(label='placeholder', children=placeholder_widget)
-        dcc.Tab(label='histogram', children=histogram_widget)
     ])
 
     right_tab = dcc.Tabs([
         dcc.Tab(label='sample images', children=gallery_widget),
-        dcc.Tab(label='graph', children=graph_widget), 
+        dcc.Tab(label='histogram', children=histogram_widget),
+        dcc.Tab(label='graph', children=graph_widget),
         dcc.Tab(label='heatmap', children=[heatmap_widget])
     ])
 

@@ -1,13 +1,11 @@
-# from dash import Input, Output, callback, State
+from dash import Input, Output, callback, State
 
-# @callback(
-#     Output("grid", "selectedRows"),
-#     State('scatterplot', 'figure'),
-#     Input("histogram", "click"),
-#     prevent_initial_call=True,
-# )
-# def histogram_is_clicked(scatterplot_fig, histogram_selection):
-#     print('histogram is clicked')
-#     class_name = histogram_selection[0]
-#     print(class_name)
-#     return {'function': f'params.data.class_name == "{class_name}"'}
+@callback(
+    Output("grid", "selectedRows", allow_duplicate=True),
+    Input("histogram", "clickData"),
+    prevent_initial_call=True,
+)
+def histogram_is_clicked(histogram_click):
+    print('histogram is clicked')
+    class_name = histogram_click['points'][0]['x']
+    return {'function': f'params.data.class_name == "{class_name}"'}
