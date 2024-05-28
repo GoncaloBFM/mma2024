@@ -3,7 +3,7 @@ from PIL import Image
 from src import config
 
 from src.Dataset import Dataset
-from src.widgets import scatterplot, heatmap
+from src.widgets import scatterplot, heatmap, histogram
 
 
 @callback(
