@@ -2,7 +2,7 @@ from dash import Output, Input, callback, Patch, State
 from dash.exceptions import PreventUpdate
 
 from src import config
-from src.widgets import graph, gallery, scatterplot, histogram
+from src.widgets import graph, gallery, scatterplot, histogram, heatmap
 
 
 @callback(
@@ -19,7 +19,8 @@ def table_filter_is_updated(filter_value):
      Output("gallery", "children"),
      Output("scatterplot", "figure"),
      Output("graph", "figure"), 
-     Output('histogram', 'figure')],
+     Output('histogram', 'figure'), 
+     Output("heatmap", "figure"), ],
     State('scatterplot', 'figure'),
     [Input("grid", "selectedRows"),
     Input("grid", "rowData")],
@@ -53,4 +54,6 @@ def table_row_is_selected(scatterplot_fig, selected_rows, added_rows):
 
     histogram_fig = histogram.draw_histogram(selected_data=data_selected)
 
-    return wordcloud_data, gallery_children, scatterplot_fig, graph_fig, histogram_fig
+    heatmap_fig = heatmap.draw_heatmap_figure(data_selected)
+
+    return wordcloud_data, gallery_children, scatterplot_fig, graph_fig, histogram_fig, heatmap_fig
