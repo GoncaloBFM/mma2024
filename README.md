@@ -34,3 +34,8 @@ docker run --net=host -v ./dataset:/usr/src/app/dataset/  mma2024
 ```
 
 After the Dash server is running open http://127.0.0.1:8050/ on your browser.
+
+## Plotly and Dash tutorials
+- Dash in 20 minutes: https://dash.plotly.com/tutorial
+- Plotly plots gallery: https://plotly.com/python/
+- 
