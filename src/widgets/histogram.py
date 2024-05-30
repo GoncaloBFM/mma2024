@@ -12,13 +12,13 @@ def create_histogram(selected_data=None):
                   responsive=True,
                   config={
                       'displaylogo': False,
-                      'modeBarButtonsToRemove': ['zoom', 'pan', 'zoomIn', 'zoomOut', 'autoScale', 'resetScale']
+                      'displayModeBar': False
                   },
                   id='histogram',
                   clear_on_unhover=True),
         dcc.Tooltip(id="histogram-tooltip",
                     loading_text="LOADING"),
-    ], className='border-widget stretchy-widget', id='histogram-container')
+    ], className='border-widget stretchy-widget histogram-container')
 
 
 def draw_histogram(selected_data):
@@ -41,7 +41,7 @@ def draw_histogram(selected_data):
         )
 
         return fig
-    
+
 
     df = Dataset.get().loc[selected_data.index]
 
@@ -67,11 +67,10 @@ def draw_histogram(selected_data):
             automargin=False, 
             fixedrange=True,
             title=dict(text="Frequency", standoff=10),
-            tickfont=dict(size=7) 
-        ), 
-        
-        margin=dict(l=30, r=30, t=150, b=0))
-    
+            tickfont=dict(size=12)
+        ),
+        margin=dict(l=60, r=60, t=200, b=30))
+
     
     return fig
 

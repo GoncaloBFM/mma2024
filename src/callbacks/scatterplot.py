@@ -35,7 +35,6 @@ def scatterplot_is_zoomed(scatterplot_fig, zoom_data):
         if min_x <= x <= max_x and min_y <= y <= max_y:
             images_in_zoom.append((x, y, image_id))
         if len(images_in_zoom) > config.MAX_IMAGES_ON_SCATTERPLOT:
-            print('3')
             return scatterplot_fig
 
     if images_in_zoom:

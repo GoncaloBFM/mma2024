@@ -9,7 +9,7 @@ from src.utils import encode_image
     Input("heatmap", "hoverData"), 
 )
 def display_hover(hoverData): 
-    print('display_hover')
+    print('Heatmap is hovered')
     if hoverData is None:
         return False, no_update, no_update
 

@@ -11,6 +11,7 @@ import callbacks.projection_radio_buttons
 import callbacks.heatmap
 import callbacks.wordcloud
 import callbacks.histogram
+import callbacks.gallery
 
 def run_ui():
     external_stylesheets = [dbc.themes.BOOTSTRAP]
@@ -25,11 +26,8 @@ def run_ui():
     heatmap_widget = heatmap.create_heatmap()
     histogram_widget = histogram.create_histogram()
 
-    left_tab = dcc.Tabs([
-        dcc.Tab(label='table', children=table_widget),
-    ])
-
     right_tab = dcc.Tabs([
+        dcc.Tab(label='wordcloud', children=wordcloud_widget),
         dcc.Tab(label='sample images', children=gallery_widget),
         dcc.Tab(label='histogram', children=histogram_widget),
         dcc.Tab(label='graph', children=graph_widget),
@@ -42,13 +40,12 @@ def run_ui():
             id='header'
         ),
         dbc.Row([
-            dbc.Col(scatterplot_widget, width=True, className='main-col'),
-            dbc.Col(wordcloud_widget, width='auto', align="center")],
-            className='g-10 main-row', justify='between'),
+            dbc.Col(scatterplot_widget, width=6, className='main-col'),
+            dbc.Col(right_tab, width=6, className='main-col')],
+            className='top-row', justify='between'),
         dbc.Row([
-            dbc.Col(left_tab, className='main-col', width=6),
-            dbc.Col(right_tab, className='main-col', width=6)
-        ], className='g-10 main-row')
+            dbc.Col(table_widget, className='main-col')
+        ], className='bottom-row')
     ], fluid=True, id='container')
 
     app.run(debug=True, use_reloader=False)

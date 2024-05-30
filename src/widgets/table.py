@@ -33,7 +33,6 @@ def create_table_grid():
             "paginationAutoPageSize": True,
             "suppressCellFocus": True,
             "rowSelection": "multiple",
-            "rowMultiSelectWithClick": True,
         },
         className='stretchy-widget ag-theme-alpine',
         style={'width': '', 'height': ''},

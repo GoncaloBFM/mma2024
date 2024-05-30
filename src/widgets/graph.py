@@ -9,8 +9,13 @@ def create_graph(selected_rows=None):
     return dcc.Graph(
         id="graph",
         figure=graph_figure,
-        className="stretchy-widget",
-        responsive=True
+        className="stretchy-widget border-widget",
+        responsive=True,
+        config = {
+            'displaylogo': False,
+            'modeBarButtonsToRemove': ['autoscale'],
+            'displayModeBar': True,
+        }
     )
 
 def draw_graph(selected_rows):

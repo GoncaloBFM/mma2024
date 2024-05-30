@@ -26,16 +26,15 @@ def create_scatterplot_figure(projection):
     fig.update_yaxes(scaleanchor="x", scaleratio=1)
     return fig
 
-
 def create_scatterplot(projection):
     return dcc.Graph(
             figure=create_scatterplot_figure(projection),
             id='scatterplot',
-            className='stretchy-widget',
+            className='stretchy-widget border-widget',
             responsive=True,
             config={
                 'displaylogo': False,
-                'modeBarButtonsToRemove': ['resetScale'],
+                'modeBarButtonsToRemove': ['autoscale'],
                 'displayModeBar': True,
             }
         )
