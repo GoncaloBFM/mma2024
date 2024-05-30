@@ -8,12 +8,12 @@ from src.utils import encode_image
     Output("heatmap-tooltip", "children"),
     Input("heatmap", "hoverData"), 
 )
-def display_hover(hoverData): 
+def display_hover(hover_data):
     print('Heatmap is hovered')
-    if hoverData is None:
+    if hover_data is None:
         return False, no_update, no_update
 
-    pt = hoverData["points"][0]
+    pt = hover_data["points"][0]
     bbox = pt["bbox"]
     x = pt["x"]
     y = pt["y"]
@@ -38,3 +38,13 @@ def display_hover(hoverData):
     ]
 
     return True, bbox, children
+
+@callback(
+    Output("grid", "selectedRows", allow_duplicate=True),
+    Input("heatmap", "clickData"),
+    prevent_initial_call=True,
+)
+def heatmap_is_clicked(click_data):
+    print('Heatmap is clicked')
+    class_name = click_data['points'][0]['y'].split('/')[-2].split('.')[1].replace('_', ' ')
+    return {'function': f'params.data.class_name == "{class_name}"'}
