@@ -13,12 +13,14 @@ def create_graph(selected_rows=None):
         responsive=True,
         config = {
             'displaylogo': False,
-            'modeBarButtonsToRemove': ['autoscale'],
+            'modeBarButtonsToRemove': ['autoscale'], # look here to remove buttons
             'displayModeBar': True,
         }
     )
 
 def draw_graph(selected_rows):
+
+    # Default to displaying entire graph or else entire selected region
     if not selected_rows or len(selected_rows) == 0:
         fig = go.Figure()
 
@@ -28,14 +30,14 @@ def draw_graph(selected_rows):
             yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
             annotations=[
                 dict(
-                    text="Click the table",
+                    text="Select Data on the Scatterplot",
                     xref="paper",
                     yref="paper",
                     showarrow=False,
                     font=dict(size=28, color="gray")
                 )
             ],
-            margin=dict(b=0, l=0, r=0, t=40)  # Adjust margins to ensure the text is visible
+            margin=dict(b=0, l=0, r=0, t=40),  # Adjust margins to ensure the text is visible
         )
 
         return fig
