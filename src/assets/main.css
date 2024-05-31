@@ -8,10 +8,12 @@
     font-family: sans-serif;
     font-weight: bold;
     font-size: 20px;
-    top: 15px;
-    float: left;
-    display: inline;
     position: absolute;
+    top: 15px;
+    left: 0;
+    width: 100%;
+    padding-left: 100px;
+    padding-right: 100px;
 }
 
 .tab-content{
@@ -53,6 +55,13 @@
     align-items: center;
 }
 
+.wordcloud-container > div{
+    height: 100%;
+    max-height: 100%;
+    width: 100%;
+    max-width: 100%;
+}
+
 #histogram {
     width: 100%;
     height: 100%;
@@ -87,6 +96,12 @@
 
 .gallery{
     overflow-y: scroll;
+    overflow-x: clip;
+}
+
+.header-button {
+    background-color: white;
+    margin-left: 10px;
 }
 
 .gallery-image{
@@ -131,4 +146,12 @@ html, body {
     border: 1px solid rgba(100, 100, 100, 1);
     box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
     display: none;
+}
+
+/* removes all plot legend toggles*/
+.legendtoggle {
+   display: none;
+}
+.legendtext {
+   cursor: default;
 }

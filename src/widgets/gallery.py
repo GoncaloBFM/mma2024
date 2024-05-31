@@ -6,7 +6,7 @@ from src.utils import encode_image
 
 
 def create_gallery():
-    return dbc.Container([], id='gallery', className='stretchy-widget border-widget gallery')
+    return html.Div([], id='gallery', className='stretchy-widget border-widget gallery')
 
 def create_gallery_children(image_paths, class_names):
     image_rows = []

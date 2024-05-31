@@ -16,10 +16,10 @@ def scatterplot_is_zoomed(scatterplot_fig, zoom_data):
     if len(zoom_data) == 1 and 'dragmode' in zoom_data:
         return dash.no_update
 
-    scatterplot_fig['layout']['images'] = []
-
     if 'xaxis.range[0]' not in zoom_data:
-        return scatterplot_fig
+        return dash.no_update
+
+    scatterplot_fig['layout']['images'] = []
 
     print('Scatterplot is zoomed')
     scatterplot_data = scatterplot_fig['data'][0]
@@ -65,7 +65,6 @@ def scatterplot_is_selected(scatterplot_fig, data_selected):
     print('Scatterplot is selected')
 
     data_selected = scatterplot.get_data_selected_on_scatterplot(scatterplot_fig)
-    scatterplot_fig['layout']['images'] = []
 
     group_by_count = (data_selected.groupby(['class_id', 'class_name'])['class_id']
                           .agg('count')

@@ -2,6 +2,7 @@ from dash import dcc
 import plotly.express 
 from src.Dataset import Dataset
 from src import config
+import plotly.graph_objects as go
 
 
 def highlight_class_on_scatterplot(scatterplot, class_ids):
@@ -21,9 +22,38 @@ def create_scatterplot_figure(projection):
         raise Exception('Projection not found')
 
     fig = plotly.express.scatter(data_frame=Dataset.get(), x=x_col, y=y_col)
-    fig.update_traces(customdata=Dataset.get().index, marker={'color': config.SCATTERPLOT_COLOR})
+    fig.update_traces(
+        customdata=Dataset.get().index, 
+        marker={'color': config.SCATTERPLOT_COLOR},
+        unselected_marker_opacity=0.60)
     fig.update_layout(dragmode='select')
     fig.update_yaxes(scaleanchor="x", scaleratio=1)
+    fig.add_trace(
+        go.Scatter(
+            x=[None],
+            y=[None],
+            mode="markers",
+            name='image embedding',
+            marker=dict(size=7, color="blue", symbol='circle'),
+        ),
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=[None],
+            y=[None],
+            mode="markers",
+            name='selected class',
+            marker=dict(size=7, color="red", symbol='circle'),
+        ),
+    )
+
+    fig.update_layout(legend=dict(
+        orientation="h",
+        yanchor="bottom",
+        y=1.02,
+        xanchor="left",
+        x=0
+    ))
     return fig
 
 def create_scatterplot(projection):

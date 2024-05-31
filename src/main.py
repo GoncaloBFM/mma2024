@@ -12,12 +12,15 @@ import callbacks.heatmap
 import callbacks.wordcloud
 import callbacks.histogram
 import callbacks.gallery
+import callbacks.deselect_button
+import callbacks.help_button
 import callbacks.graph
 
 def run_ui():
     external_stylesheets = [dbc.themes.BOOTSTRAP]
     app = Dash(__name__, external_stylesheets=external_stylesheets)
 
+    help_popup_widget = help_popup.create_help_popup()
     projection_radio_buttons_widget = projection_radio_buttons.create_projection_radio_buttons()
     table_widget = create_table()
     scatterplot_widget = scatterplot.create_scatterplot(config.DEFAULT_PROJECTION)
@@ -36,10 +39,12 @@ def run_ui():
     ])
 
     app.layout = dbc.Container([
-        html.Div(
+        help_popup_widget,
+        dbc.Stack([
             projection_radio_buttons_widget,
-            id='header'
-        ),
+            dbc.Button('Deselect everything', id='deselect-button', class_name="btn btn-outline-primary ms-auto header-button"),
+            dbc.Button('Help', id='help-button', class_name="btn btn-outline-primary header-button")
+        ], id='header', direction="horizontal"),
         dbc.Row([
             dbc.Col(scatterplot_widget, width=6, className='main-col'),
             dbc.Col(right_tab, width=6, className='main-col')],

@@ -6,15 +6,6 @@ from src.widgets import graph, gallery, scatterplot, histogram, heatmap
 
 
 @callback(
-    Output("grid", "dashGridOptions"),
-    Input("table-filter", "value")
-)
-def table_filter_is_updated(filter_value):
-    new_filter = Patch()
-    new_filter['quickFilterText'] = filter_value
-    return new_filter
-
-@callback(
     [Output('wordcloud', 'list'),
      Output("gallery", "children"),
      Output("scatterplot", "figure"),

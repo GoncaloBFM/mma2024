@@ -1,23 +1,16 @@
 import dash_ag_grid
-from dash import dcc
-import dash_bootstrap_components as dbc
+from dash import dcc, html
 
 from src.Dataset import Dataset
 
 
 def create_table():
-    return dbc.Stack([
-        create_table_filter(),
+    return html.Div([
         create_table_grid()
     ],
         className='stretchy-widget',
         id='table'
     )
-
-
-def create_table_filter():
-    return dcc.Input(id="table-filter", placeholder="filter table...")
-
 
 def create_table_grid():
     return dash_ag_grid.AgGrid(
@@ -34,6 +27,7 @@ def create_table_grid():
             "suppressCellFocus": True,
             "rowSelection": "multiple",
         },
+        defaultColDef={"filter": "agTextColumnFilter"},
         className='stretchy-widget ag-theme-alpine',
         style={'width': '', 'height': ''},
         id='grid'
