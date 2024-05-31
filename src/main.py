@@ -12,6 +12,7 @@ import callbacks.heatmap
 import callbacks.wordcloud
 import callbacks.histogram
 import callbacks.gallery
+import callbacks.graph
 
 def run_ui():
     external_stylesheets = [dbc.themes.BOOTSTRAP]

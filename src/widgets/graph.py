@@ -1,6 +1,7 @@
 import networkx as nx
 import plotly.graph_objects as go
 from dash import dcc
+import numpy as np
 
 from src.Dataset import Dataset
 
@@ -13,12 +14,14 @@ def create_graph(selected_rows=None):
         responsive=True,
         config = {
             'displaylogo': False,
-            'modeBarButtonsToRemove': ['autoscale'],
+            'modeBarButtonsToRemove': ['autoscale', 'lasso2d', 'select2d'], # look here to remove buttons
             'displayModeBar': True,
         }
     )
 
-def draw_graph(selected_rows):
+def draw_graph(selected_rows, valid_birds=None, drag_select=False):
+
+    # Default to displaying Blank graph with message if nothing is selected
     if not selected_rows or len(selected_rows) == 0:
         fig = go.Figure()
 
@@ -28,14 +31,14 @@ def draw_graph(selected_rows):
             yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
             annotations=[
                 dict(
-                    text="Click the table",
+                    text="Select Data on the Scatterplot",
                     xref="paper",
                     yref="paper",
                     showarrow=False,
                     font=dict(size=28, color="gray")
                 )
             ],
-            margin=dict(b=0, l=0, r=0, t=40)  # Adjust margins to ensure the text is visible
+            margin=dict(b=0, l=0, r=0, t=40),  # Adjust margins to ensure the text is visible
         )
 
         return fig
@@ -48,6 +51,9 @@ def draw_graph(selected_rows):
 
     # Only look at selected species
     species_df = Dataset.data.loc[Dataset.data["species_name"].isin(bird_species)]
+    # Filter out class names that are not in selected region
+    if valid_birds is not None:
+        species_df = species_df.loc[species_df["class_name"].isin(valid_birds)]
     selected_nodes = set(bird_classes)
 
     # Add nodes (all unique bird names)
@@ -64,13 +70,14 @@ def draw_graph(selected_rows):
 
 
     # Get positions of nodes using a layout
-    pos = nx.spring_layout(G)
+    k_value = 2/np.sqrt(G.number_of_nodes())
+    pos = nx.spring_layout(G, scale=15, k=k_value)
 
     # Create edge traces
     edge_trace = go.Scatter(
         x=[],
         y=[],
-        line=dict(width=2, color='gray'),
+        line=dict(width=1, color='gray'),
         hoverinfo='none',
         mode='lines'
     )
@@ -91,7 +98,7 @@ def draw_graph(selected_rows):
         marker=dict(
             size=20,
             colorscale='ylgnbu',
-            line=dict(width=2, color='darkblue')
+            line=dict(width=0, color='darkblue')
         )
     )
 
@@ -104,9 +111,9 @@ def draw_graph(selected_rows):
 
         # Assign color based on whether the node is in the highlight list
         if node in bird_classes:
-            node_colours.append('red')
+            node_colours.append('rgba(255, 0, 0, 0.5)'*(1-drag_select) + 'rgba(31, 119, 180, 0.5)'*drag_select)
         else:
-            node_colours.append('violet')
+            node_colours.append('rgba(31, 119, 180, 0.5)')
 
     # Add colors to nodes
     node_trace['marker']['color'] = node_colours
