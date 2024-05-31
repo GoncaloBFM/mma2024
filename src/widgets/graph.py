@@ -14,14 +14,14 @@ def create_graph(selected_rows=None):
         responsive=True,
         config = {
             'displaylogo': False,
-            'modeBarButtonsToRemove': ['autoscale'], # look here to remove buttons
+            'modeBarButtonsToRemove': ['autoscale', 'lasso2d', 'select2d'], # look here to remove buttons
             'displayModeBar': True,
         }
     )
 
-def draw_graph(selected_rows):
+def draw_graph(selected_rows, valid_birds=None, drag_select=False):
 
-    # Default to displaying entire graph or else entire selected region
+    # Default to displaying Blank graph with message if nothing is selected
     if not selected_rows or len(selected_rows) == 0:
         fig = go.Figure()
 
@@ -51,6 +51,9 @@ def draw_graph(selected_rows):
 
     # Only look at selected species
     species_df = Dataset.data.loc[Dataset.data["species_name"].isin(bird_species)]
+    # Filter out class names that are not in selected region
+    if valid_birds is not None:
+        species_df = species_df.loc[species_df["class_name"].isin(valid_birds)]
     selected_nodes = set(bird_classes)
 
     # Add nodes (all unique bird names)
@@ -108,7 +111,7 @@ def draw_graph(selected_rows):
 
         # Assign color based on whether the node is in the highlight list
         if node in bird_classes:
-            node_colours.append('rgba(255, 0, 0, 0.5)')
+            node_colours.append('rgba(255, 0, 0, 0.5)'*(1-drag_select) + 'rgba(31, 119, 180, 0.5)'*drag_select)
         else:
             node_colours.append('rgba(31, 119, 180, 0.5)')
 
