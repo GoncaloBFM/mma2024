@@ -1,6 +1,7 @@
 import networkx as nx
 import plotly.graph_objects as go
 from dash import dcc
+import numpy as np
 
 from src.Dataset import Dataset
 
@@ -66,13 +67,14 @@ def draw_graph(selected_rows):
 
 
     # Get positions of nodes using a layout
-    pos = nx.spring_layout(G, scale=10)
+    k_value = 2/np.sqrt(G.number_of_nodes())
+    pos = nx.spring_layout(G, scale=15, k=k_value)
 
     # Create edge traces
     edge_trace = go.Scatter(
         x=[],
         y=[],
-        line=dict(width=2, color='gray'),
+        line=dict(width=1, color='gray'),
         hoverinfo='none',
         mode='lines'
     )
@@ -93,7 +95,7 @@ def draw_graph(selected_rows):
         marker=dict(
             size=20,
             colorscale='ylgnbu',
-            line=dict(width=2, color='darkblue')
+            line=dict(width=0, color='darkblue')
         )
     )
 
@@ -106,9 +108,9 @@ def draw_graph(selected_rows):
 
         # Assign color based on whether the node is in the highlight list
         if node in bird_classes:
-            node_colours.append('red')
+            node_colours.append('rgba(255, 0, 0, 0.5)')
         else:
-            node_colours.append('violet')
+            node_colours.append('rgba(31, 119, 180, 0.5)')
 
     # Add colors to nodes
     node_trace['marker']['color'] = node_colours
