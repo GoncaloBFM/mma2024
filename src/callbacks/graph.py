@@ -2,7 +2,6 @@ from dash import Input, Output, callback, State
 
 @callback(
     Output("grid", "selectedRows", allow_duplicate=True),
-    # State('graph', 'figure'),
     Input("graph", "clickData"),
     prevent_initial_call=True,
 )

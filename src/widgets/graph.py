@@ -66,7 +66,7 @@ def draw_graph(selected_rows):
 
 
     # Get positions of nodes using a layout
-    pos = nx.spring_layout(G)
+    pos = nx.spring_layout(G, scale=10)
 
     # Create edge traces
     edge_trace = go.Scatter(

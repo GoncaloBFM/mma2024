@@ -16,6 +16,7 @@ MAX_IMAGES_ON_SCATTERPLOT = 100
 DEFAULT_PROJECTION = 'UMAP'
 DEFAULT_LEFT_WIDGET = 'table'
 
+MAX_GRAPH_NODES = 12
 
 # dataset extraction configuration
 DATASET_SAMPLE_SIZE = 1000 #replace with None to use entire dataset
