@@ -5,7 +5,7 @@ from pathlib import Path
 IMAGE_GALLERY_SIZE = 24
 IMAGE_GALLERY_ROW_SIZE = 4
 
-WORDCLOUD_IMAGE_HEIGHT = 650
+WORDCLOUD_IMAGE_HEIGHT = 600
 WORDCLOUD_IMAGE_WIDTH = 800
 
 SCATTERPLOT_COLOR = 'rgba(31, 119, 180, 0.5)'
@@ -19,7 +19,7 @@ DEFAULT_LEFT_WIDGET = 'table'
 MAX_GRAPH_NODES = 12
 
 # dataset extraction configuration
-DATASET_SAMPLE_SIZE = 1000 #replace with None to use entire dataset
+DATASET_SAMPLE_SIZE = 11788 # number of images in the CUB-200-2011 dataset is 11788, that is the max value for this parameter
 
 
 # path configuration

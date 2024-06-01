@@ -16,8 +16,13 @@ def create_wordcloud():
             shuffle=False,
             rotateRatio=0.5,
             shape='square',
-            hover=True,
-            weightFactor=10
+            hover=False,
+            weightFactor=10,
         ),
         className='wordcloud-container border-widget stretchy-widget'
     )
+
+
+def wordcloud_weight_rescale(series, dataset_min, dataset_max):
+    return 1 + ((series - dataset_min) / (dataset_max - dataset_min)) * 9
+

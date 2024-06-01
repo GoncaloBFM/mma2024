@@ -3,7 +3,7 @@ import os
 import pandas
 
 from src import config, feature_engineering
-from src.dataloader import cub_loader
+from src.dataloaders import cub_loader
 
 
 class Dataset:
