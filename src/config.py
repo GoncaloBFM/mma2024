@@ -19,7 +19,7 @@ DEFAULT_LEFT_WIDGET = 'table'
 MAX_GRAPH_NODES = 12
 
 # dataset extraction configuration
-DATASET_SAMPLE_SIZE = 11788 # number of images in the CUB-200-2011 dataset is 11788, that is the max value for this parameter
+DATASET_SAMPLE_SIZE = 1000 # number of images in the CUB-200-2011 dataset is 11788, that is the max value for this parameter
 
 
 # path configuration
