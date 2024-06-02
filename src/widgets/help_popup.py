@@ -17,7 +17,7 @@ def create_help_popup():
                           'Use Shift + click to select blocks of rows. '),
             dbc.ModalBody(f'Use the widgets in the tabs to explore the data. The gallery shows you a sample of up to {config.IMAGE_GALLERY_SIZE} images. '
                           f'The graph shows birds with the same last species name considering up to {config.MAX_GRAPH_NODES} central nodes. '
-                          'The wordcloud and histogram show the most prevalent bird species in a selection'
+                          'The wordcloud and histogram show the most prevalent bird species in a selection. '
                           'The heatmap shows different characteristics per bird image.'),
         ],
         id="help-popup",
