@@ -6,7 +6,7 @@ from src.widgets import scatterplot
 
 @callback(
     Output('scatterplot', 'figure', allow_duplicate=True),
-    Output('grid', 'deselectAll'),
+    Output('grid', 'deselectAll', allow_duplicate=True),
     State('projection-radio-buttons', 'value'),
     State('scatterplot', 'figure'),
     Input('deselect-button', 'n_clicks'),
