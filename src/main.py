@@ -1,7 +1,7 @@
 from dash import Dash, html, dcc
 from src import config
 from src.Dataset import Dataset
-from src.widgets import projection_radio_buttons, gallery, scatterplot, wordcloud, graph, heatmap, histogram, help_popup
+from src.widgets import projection_radio_buttons, gallery, scatterplot, wordcloud, graph, heatmap, histogram, help_popup, test
 from src.widgets.table import create_table
 import dash_bootstrap_components as dbc
 
@@ -29,13 +29,15 @@ def run_ui():
     graph_widget = graph.create_graph()
     heatmap_widget = heatmap.create_heatmap()
     histogram_widget = histogram.create_histogram()
+    test_widget = test.create_ohlc_chart()
 
     right_tab = dcc.Tabs([
         dcc.Tab(label='wordcloud', children=wordcloud_widget),
         dcc.Tab(label='sample images', children=gallery_widget),
         dcc.Tab(label='histogram', children=histogram_widget),
         dcc.Tab(label='graph', children=graph_widget),
-        dcc.Tab(label='heatmap', children=[heatmap_widget])
+        dcc.Tab(label='heatmap', children=[heatmap_widget]),
+        dcc.Tab(label='ohlc chart', children=[test_widget]),
     ])
 
     app.layout = dbc.Container([
