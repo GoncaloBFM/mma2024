@@ -21,8 +21,24 @@ def create_input():
                     html.Label('Answer:'),
                     dcc.Textarea(
                         id='answer-input',
-                        style={'width': '100%', 'height': '100px'},
-                        placeholder='Enter the answer here...'
+                        value='''import matplotlib.pyplot as plt
+
+# Example data for the pie chart
+labels = ['Rent', 'Groceries', 'Utilities']
+sizes = [1200, 300, 150]
+colors = ['#ff9999','#66b3ff','#99ff99']
+explode = (0.1, 0, 0)  # explode 1st slice (i.e. 'Rent')
+
+fig1, ax1 = plt.subplots()
+ax1.pie(sizes, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%',
+        shadow=True, startangle=140)
+ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+
+plt.title("January Expenses")
+plt.show()
+''',  # Default value for the answer input
+                        style={'width': '100%', 'height': '200px'},  # Adjusted height for larger input area
+                        placeholder='Enter the answer here...',
                     ),
                 ]
             ),

@@ -6,6 +6,7 @@ from src.widgets.table import create_table
 import dash_bootstrap_components as dbc
 import pandas as pd
 
+import callbacks.input
 # import callbacks.table
 # import callbacks.scatterplot
 # import callbacks.projection_radio_buttons
@@ -17,24 +18,6 @@ import pandas as pd
 # import callbacks.help_button
 # import callbacks.graph
 
-
-code = '''import matplotlib.pyplot as plt
-
-# Example data for the pie chart
-labels = ['Rent', 'Groceries', 'Utilities']
-sizes = [1200, 300, 150]
-colors = ['#ff9999','#66b3ff','#99ff99']
-explode = (0.1, 0, 0)  # explode 1st slice (i.e. 'Rent')
-
-fig1, ax1 = plt.subplots()
-ax1.pie(sizes, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%',
-        shadow=True, startangle=140)
-ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-
-plt.title("January Expenses")
-plt.show()
-'''
-
 # Sample data, replace with your actual data source
 chart_data = pd.DataFrame({
     'Date': pd.date_range(start='2023-01-01', periods=30, freq='D'),
@@ -44,13 +27,11 @@ chart_data = pd.DataFrame({
     'Close': [30, 31, 32, 31, 29, 28, 29, 31, 32, 34, 33, 32, 32, 34, 36, 37, 38, 39, 40, 39, 38, 37, 35, 36, 34, 33, 32, 31, 29, 28]
 })
 
-
 def run_ui():
     external_stylesheets = [dbc.themes.BOOTSTRAP]
     app = Dash(__name__, external_stylesheets=external_stylesheets)
 
     input_widget = input.create_input()
-    chart_widget = chart.create_chart(code)
     help_popup_widget = help_popup.create_help_popup()
     projection_radio_buttons_widget = projection_radio_buttons.create_projection_radio_buttons()
     # table_widget = create_table()
@@ -63,7 +44,7 @@ def run_ui():
     ohls_chart_widget = ohls_chart.create_ohlc_chart(chart_data)
 
     right_tab = dcc.Tabs([
-        dcc.Tab(label='chart', children=[html.Div(chart_widget, style={'display': 'flex', 'justify-content': 'center', 'align-items': 'center', 'height': '100%'})]),
+        dcc.Tab(label='chart', children=[html.Div(id='chart-div', style={'display': 'flex', 'justify-content': 'center', 'align-items': 'center', 'height': '100%'})]),
         # dcc.Tab(label='wordcloud', children=wordcloud_widget),
         # dcc.Tab(label='sample images', children=gallery_widget),
         # dcc.Tab(label='histogram', children=histogram_widget),
@@ -80,8 +61,8 @@ def run_ui():
             dbc.Button('Help', id='help-button', class_name="btn btn-outline-primary header-button")
         ], id='header', direction="horizontal"),
         dbc.Row([
-            dbc.Col(input_widget, width=6, className='main-col'),
-            dbc.Col(right_tab, width=6, className='main-col')
+            dbc.Col(input_widget, width=6, class_name='main-col'),
+            dbc.Col(right_tab, width=6, class_name='main-col')
         ], className='top-row', justify='between'),
         # dbc.Row([
         #     dbc.Col(scatterplot_widget, width=6, className='main-col'),
@@ -93,7 +74,6 @@ def run_ui():
     ], fluid=True, id='container')
 
     app.run(debug=True, use_reloader=False)
-
 
 def main():
     if not Dataset.files_exist():
@@ -110,7 +90,6 @@ def main():
 
     print('Starting Dash')
     run_ui()
-
 
 if __name__ == '__main__':
     main()

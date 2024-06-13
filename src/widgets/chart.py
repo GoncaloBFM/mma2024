@@ -3,9 +3,13 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import io
 import base64
+import textwrap
 
 # Function to create the chart
 def create_chart(code_str):
+    # Dedent the code string to handle leading whitespace
+    code_str = textwrap.dedent(code_str)
+    
     # Execute the provided code string to generate a matplotlib chart
     exec_globals = {}
     exec_locals = {}
