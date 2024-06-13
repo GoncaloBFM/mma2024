@@ -7,6 +7,9 @@ import textwrap
 
 # Function to create the chart
 def create_chart(code_str):
+    # Clear any existing matplotlib figures
+    plt.close('all')
+    
     # Dedent the code string to handle leading whitespace
     code_str = textwrap.dedent(code_str)
     

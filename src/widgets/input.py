@@ -42,6 +42,12 @@ plt.show()
                     ),
                 ]
             ),
-            html.Button('Submit', id='submit-button', n_clicks=0)
+            html.Div(
+                style={'display': 'flex', 'justifyContent': 'center', 'width': '80%', 'gap': '10px'},
+                children=[
+                    html.Button('Save', id='save-button', n_clicks=0, style={'margin': '5px'}),
+                    html.Button('Submit', id='submit-button', n_clicks=0, style={'margin': '5px'}),
+                ]
+            )
         ]
     )

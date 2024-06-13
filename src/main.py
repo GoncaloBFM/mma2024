@@ -6,17 +6,8 @@ from src.widgets.table import create_table
 import dash_bootstrap_components as dbc
 import pandas as pd
 
+import callbacks.chart
 import callbacks.input
-# import callbacks.table
-# import callbacks.scatterplot
-# import callbacks.projection_radio_buttons
-# import callbacks.heatmap
-# import callbacks.wordcloud
-# import callbacks.histogram
-# import callbacks.gallery
-# import callbacks.deselect_button
-# import callbacks.help_button
-# import callbacks.graph
 
 # Sample data, replace with your actual data source
 chart_data = pd.DataFrame({
@@ -66,7 +57,7 @@ def run_ui():
         ], className='top-row', justify='between'),
         # dbc.Row([
         #     dbc.Col(scatterplot_widget, width=6, className='main-col'),
-        #     dbc.Col(right_tab, width=6, className='main-col')],
+        #     dbc.Col(right_tab, width=6, class_name='main-col')],
         #     className='top-row', justify='between'),
         # dbc.Row([
         #     dbc.Col(table_widget, className='main-col')
