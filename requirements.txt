@@ -11,3 +11,5 @@ umap-learn
 scikit-learn
 wget
 dash-holoniq-wordcloud
+cleanlab-studio
+python-dotenv
