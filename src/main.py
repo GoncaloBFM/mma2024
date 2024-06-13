@@ -5,9 +5,8 @@ from src.widgets import ohls_chart, projection_radio_buttons, gallery, scatterpl
 from src.widgets.table import create_table
 import dash_bootstrap_components as dbc
 import pandas as pd
-
-import callbacks.chart
-import callbacks.input
+import src.callbacks.input  # Import the callbacks to ensure they are registered
+import src.callbacks.chart  # Import the chart callback
 
 # Sample data, replace with your actual data source
 chart_data = pd.DataFrame({
@@ -18,50 +17,64 @@ chart_data = pd.DataFrame({
     'Close': [30, 31, 32, 31, 29, 28, 29, 31, 32, 34, 33, 32, 32, 34, 36, 37, 38, 39, 40, 39, 38, 37, 35, 36, 34, 33, 32, 31, 29, 28]
 })
 
+code = '''import matplotlib.pyplot as plt
+
+# Example data for the pie chart
+labels = ['Rent', 'Groceries', 'Utilities']
+sizes = [1200, 300, 150]
+colors = ['#ff9999','#66b3ff','#99ff99']
+explode = (0.1, 0, 0)  # explode 1st slice (i.e. 'Rent')
+
+fig1, ax1 = plt.subplots()
+ax1.pie(sizes, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%',
+        shadow=True, startangle=140)
+ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+
+plt.title("January Expenses")
+plt.show()
+'''
+
 def run_ui():
     external_stylesheets = [dbc.themes.BOOTSTRAP]
-    app = Dash(__name__, external_stylesheets=external_stylesheets)
+    app = Dash(__name__, external_stylesheets=external_stylesheets, suppress_callback_exceptions=True)
 
-    input_widget = input.create_input()
+    prompt_input = dcc.Textarea(id='prompt-input', style={'width': '100%', 'height': 100}, placeholder='Enter your prompt here...')
+    answer_widget = dcc.Textarea(id='answer-input', style={'width': '100%', 'height': 100}, placeholder='Answer will be displayed here...')
+
+    initial_chart = chart.create_chart(code)
     help_popup_widget = help_popup.create_help_popup()
     projection_radio_buttons_widget = projection_radio_buttons.create_projection_radio_buttons()
-    # table_widget = create_table()
-    # scatterplot_widget = scatterplot.create_scatterplot(config.DEFAULT_PROJECTION)
-    # wordcloud_widget = wordcloud.create_wordcloud()
-    # gallery_widget = gallery.create_gallery()
-    # graph_widget = graph.create_graph()
-    # heatmap_widget = heatmap.create_heatmap()
-    # histogram_widget = histogram.create_histogram()
     ohls_chart_widget = ohls_chart.create_ohlc_chart(chart_data)
 
-    right_tab = dcc.Tabs([
-        dcc.Tab(label='chart', children=[html.Div(id='chart-div', style={'display': 'flex', 'justify-content': 'center', 'align-items': 'center', 'height': '100%'})]),
-        # dcc.Tab(label='wordcloud', children=wordcloud_widget),
-        # dcc.Tab(label='sample images', children=gallery_widget),
-        # dcc.Tab(label='histogram', children=histogram_widget),
-        # dcc.Tab(label='graph', children=graph_widget),
-        # dcc.Tab(label='heatmap', children=[heatmap_widget]),
-        dcc.Tab(label='ohlc chart', children=[ohls_chart_widget]),
-    ])
+    tabs = dcc.Tabs([
+        dcc.Tab(label='Input & Answer', children=[
+            dbc.Container([
+                dbc.Row([
+                    dbc.Col(prompt_input, width=12),
+                    dbc.Col(answer_widget, width=12)
+                ]),
+                dbc.Row([
+                    dbc.Col(dbc.Button('Save', id='save-button', color='primary'), width='auto'),
+                    dbc.Col(dbc.Button('Submit', id='submit-button', color='success'), width='auto')
+                ], justify='center', style={'marginTop': '20px'})
+            ], fluid=True)
+        ]),
+        dcc.Tab(label='Chart', children=[
+            dbc.Container([
+                dbc.Row([
+                    dbc.Col(html.Div(id='old-chart-div', children=[initial_chart]), width=6),
+                    dbc.Col(html.Div(id='new-chart-div', children=[]), width=6)
+                ])
+            ], fluid=True)
+        ]),
+        dcc.Tab(label='OHLC Chart', children=[
+            html.Div(ohls_chart_widget, style={'display': 'flex', 'justify-content': 'center', 'align-items': 'center', 'height': '100%'})
+        ]),
+    ], style={'marginBottom': '20px'})
 
     app.layout = dbc.Container([
         help_popup_widget,
-        dbc.Stack([
-            projection_radio_buttons_widget,
-            dbc.Button('Deselect everything', id='deselect-button', class_name="btn btn-outline-primary ms-auto header-button"),
-            dbc.Button('Help', id='help-button', class_name="btn btn-outline-primary header-button")
-        ], id='header', direction="horizontal"),
-        dbc.Row([
-            dbc.Col(input_widget, width=6, class_name='main-col'),
-            dbc.Col(right_tab, width=6, class_name='main-col')
-        ], className='top-row', justify='between'),
-        # dbc.Row([
-        #     dbc.Col(scatterplot_widget, width=6, className='main-col'),
-        #     dbc.Col(right_tab, width=6, class_name='main-col')],
-        #     className='top-row', justify='between'),
-        # dbc.Row([
-        #     dbc.Col(table_widget, className='main-col')
-        # ], className='bottom-row')
+        tabs,
     ], fluid=True, id='container')
 
     app.run(debug=True, use_reloader=False)
