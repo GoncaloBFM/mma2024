@@ -1,10 +1,10 @@
-from dash import callback, Output, Input
+from dash import callback, Output, Input, State
 from src.widgets import chart
 
 @callback(
     Output('chart-div', 'children'),
     Input('submit-button', 'n_clicks'),
-    Input('answer-input', 'value'),
+    State('answer-input', 'value'),
     prevent_initial_call=True
 )
 def update_chart(n_clicks, answer_code):
