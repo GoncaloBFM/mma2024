@@ -7,6 +7,8 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 import src.callbacks.input  # Import the callbacks to ensure they are registered
 import src.callbacks.chart  # Import the chart callback
+from src.widgets import dataset_selection
+import src.callbacks.dataset_selection
 
 # Sample data, replace with your actual data source
 chart_data = pd.DataFrame({
@@ -40,14 +42,17 @@ def run_ui():
 
     prompt_input = dcc.Textarea(id='prompt-input', style={'width': '100%', 'height': 100}, placeholder='Enter your prompt here...')
     answer_widget = dcc.Textarea(id='answer-input', style={'width': '100%', 'height': 100}, placeholder='Answer will be displayed here...')
+    score_store = dcc.Store(id='score-store')
 
     initial_chart = chart.create_chart(code)
     help_popup_widget = help_popup.create_help_popup()
-    projection_radio_buttons_widget = projection_radio_buttons.create_projection_radio_buttons()
     ohls_chart_widget = ohls_chart.create_ohlc_chart(chart_data)
 
     tabs = dcc.Tabs([
-        dcc.Tab(label='Input & Answer', children=[
+        dcc.Tab(label='Dataset Selection', children=[
+            dataset_selection.create_dataset_selection()
+        ]),
+        dcc.Tab(label='Prompt & Code', children=[
             dbc.Container([
                 dbc.Row([
                     dbc.Col(prompt_input, width=12),
@@ -56,10 +61,11 @@ def run_ui():
                 dbc.Row([
                     dbc.Col(dbc.Button('Save', id='save-button', color='primary'), width='auto'),
                     dbc.Col(dbc.Button('Submit', id='submit-button', color='success'), width='auto')
-                ], justify='center', style={'marginTop': '20px'})
+                ], justify='center', style={'marginTop': '20px'}),
+                score_store
             ], fluid=True)
         ]),
-        dcc.Tab(label='Chart', children=[
+        dcc.Tab(label='Chart/ Visualization', children=[
             dbc.Container([
                 dbc.Row([
                     dbc.Col(html.Div(id='old-chart-div', children=[initial_chart]), width=6),
@@ -67,7 +73,7 @@ def run_ui():
                 ])
             ], fluid=True)
         ]),
-        dcc.Tab(label='OHLC Chart', children=[
+        dcc.Tab(label='Uncertainty Chart', children=[
             html.Div(ohls_chart_widget, style={'display': 'flex', 'justify-content': 'center', 'align-items': 'center', 'height': '100%'})
         ]),
     ], style={'marginBottom': '20px'})
