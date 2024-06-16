@@ -3,9 +3,11 @@ import pandas as pd
 
 def create_dataset_selection():
     options = [
-        {'label': 'Human Resources dataset', 'value': 'Human_Resources.csv'},
+        {'label': 'Human Resources dataset', 'value': 'Human_Resources'},
         {'label': 'House Prices', 'value': 'Housing'},
-        {'label': 'Campus Recroutment', 'value': 'Placement_Data_Full_Class.csv'}
+        {'label': 'Campus Recroutment', 'value': 'Placement_Data_Full_Class'},
+        {'label': 'Supermarkt Sales', 'value': 'supermarket_sales'},
+        {'label': 'Hotel Bookings', 'value': 'hotel_booking'}
     ]
 
 

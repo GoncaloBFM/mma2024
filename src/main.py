@@ -68,8 +68,8 @@ def run_ui():
         dcc.Tab(label='Chart/ Visualization', children=[
             dbc.Container([
                 dbc.Row([
-                    dbc.Col(html.Div(id='old-chart-div', children=[initial_chart]), width=6),
-                    dbc.Col(html.Div(id='new-chart-div', children=[]), width=6)
+                    dbc.Col(html.Div(id='old-chart-div', children=[initial_chart], style={'height': '500px', 'overflow': 'auto'}), width=6),
+                    dbc.Col(html.Div(id='new-chart-div', children=[], style={'height': '500px', 'overflow': 'auto'}), width=6)
                 ])
             ], fluid=True)
         ]),

@@ -23,7 +23,7 @@ def create_chart(code_str):
         
         # Save the matplotlib figure to a bytes buffer
         buf = io.BytesIO()
-        plt.savefig(buf, format='png')
+        plt.savefig(buf, format='png', bbox_inches='tight')
         buf.seek(0)
         
         # Convert the buffer to a base64 string
@@ -39,18 +39,22 @@ def create_chart(code_str):
                 x=0, y=1,
                 sizex=1, sizey=1,
                 xanchor="left",
-                yanchor="top"
+                yanchor="top",
+                sizing="contain",
+                layer="below"
             )
         )
         
-        fig.update_xaxes(visible=False)
-        fig.update_yaxes(visible=False)
+        fig.update_xaxes(visible=False, range=[0, 1])
+        fig.update_yaxes(visible=False, range=[0, 1])
         fig.update_layout(
             title="Chart",
-            margin=dict(l=0, r=0, t=40, b=0)
+            margin=dict(l=0, r=0, t=40, b=0),
+            paper_bgcolor="white",
+            plot_bgcolor="white"
         )
         
-        return dcc.Graph(figure=fig, style={'width': '100%', 'height': '100%'})
+        return dcc.Graph(figure=fig, style={'width': '100%', 'height': '100%', 'overflow': 'auto'})
     
     except Exception as e:
         error_message = f"An error occurred while plotting the chart: {str(e)}"
