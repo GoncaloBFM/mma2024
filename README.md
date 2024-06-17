@@ -59,4 +59,17 @@ The definition for your response schema will be included between these strings: 
 
 Plot a scatterplot. Provide only Python code, do not give any reaction other than the code itself, no yapping, no certainly, no nothing like strings, only the code
 
+# HR
+Create a scatter plot showing the relationship between house prices and square footage.
 
+# Houseprices
+Create a scatter plot showing the relationship between house prices and square footage.
+
+# Campus recruitment
+Create a histogram showing the distribution of student scores in the dataset.
+
+# Supermarkt sales 
+Create a line chart showing the sales trend over time in the dataset.
+
+# Hotel bookings
+Create a bar chart showing the number of bookings per month in the dataset.

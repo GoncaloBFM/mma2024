@@ -1,15 +1,13 @@
 from dash import html, dcc, dash_table
-import pandas as pd
 
 def create_dataset_selection():
     options = [
         {'label': 'Human Resources dataset', 'value': 'Human_Resources'},
         {'label': 'House Prices', 'value': 'Housing'},
-        {'label': 'Campus Recroutment', 'value': 'Placement_Data_Full_Class'},
-        {'label': 'Supermarkt Sales', 'value': 'supermarket_sales'},
+        {'label': 'Campus Recruitment', 'value': 'Placement_Data_Full_Class'},
+        {'label': 'Supermarket Sales', 'value': 'supermarket_sales'},
         {'label': 'Hotel Bookings', 'value': 'hotel_booking'}
     ]
-
 
     return html.Div([
         dcc.Dropdown(
@@ -17,7 +15,8 @@ def create_dataset_selection():
             options=options,
             placeholder='Select a dataset'
         ),
-        html.Div(id='dataset-table', style={'overflowX': 'auto'})
+        html.Div(id='dataset-table', style={'overflowX': 'auto'}),
+        dcc.Store(id='selected-dataset-store')
     ])
 
 def create_table(data):

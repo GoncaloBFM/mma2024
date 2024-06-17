@@ -44,7 +44,7 @@ def run_ui():
     answer_widget = dcc.Textarea(id='answer-input', style={'width': '100%', 'height': 100}, placeholder='Answer will be displayed here...')
     score_store = dcc.Store(id='score-store')
 
-    initial_chart = chart.create_chart(code)
+    initial_chart = chart.create_chart(code, 'Housing')  # Provide the dataset name
     help_popup_widget = help_popup.create_help_popup()
     ohls_chart_widget = ohls_chart.create_ohlc_chart(chart_data)
 
@@ -101,5 +101,5 @@ def main():
     print('Starting Dash')
     run_ui()
 
-if __name__ == '__main__':
+if __name__ ==     '__main__':
     main()

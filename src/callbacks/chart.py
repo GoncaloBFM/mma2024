@@ -7,12 +7,13 @@ from src.widgets import chart
     Input('submit-button', 'n_clicks'),
     State('answer-input', 'value'),
     State('new-chart-div', 'children'),
+    State('selected-dataset-store', 'data'),
     prevent_initial_call=True
 )
-def update_chart(n_clicks, answer_code, current_new_chart):
-    if n_clicks > 0 and answer_code:
+def update_chart(n_clicks, answer_code, current_new_chart, selected_dataset):
+    if n_clicks > 0 and answer_code and selected_dataset:
         try:
-            new_chart = chart.create_chart(answer_code)
+            new_chart = chart.create_chart(answer_code, selected_dataset)
             # Move the current new chart to old chart and display the new valid chart
             return current_new_chart, [new_chart]
         except Exception as e:
