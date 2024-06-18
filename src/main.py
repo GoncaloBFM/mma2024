@@ -1,8 +1,7 @@
 from dash import Dash, html, dcc
 from src import config
 from src.Dataset import Dataset
-from src.widgets import ohls_chart, projection_radio_buttons, gallery, scatterplot, wordcloud, graph, heatmap, histogram, help_popup, input, chart
-from src.widgets.table import create_table
+from src.widgets import ohls_chart, help_popup, chart
 import dash_bootstrap_components as dbc
 import pandas as pd
 import src.callbacks.combined_callback  # Import the combined callback
