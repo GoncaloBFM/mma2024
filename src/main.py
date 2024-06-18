@@ -5,10 +5,8 @@ from src.widgets import ohls_chart, projection_radio_buttons, gallery, scatterpl
 from src.widgets.table import create_table
 import dash_bootstrap_components as dbc
 import pandas as pd
-import src.callbacks.input  # Import the callbacks to ensure they are registered
-import src.callbacks.chart  # Import the chart callback
+import src.callbacks.combined_callback  # Import the combined callback
 from src.widgets import dataset_selection
-import src.callbacks.dataset_selection
 
 # Sample data, replace with your actual data source
 chart_data = pd.DataFrame({
@@ -83,7 +81,7 @@ def run_ui():
         tabs,
     ], fluid=True, id='container')
 
-    app.run(debug=True, use_reloader=False)
+    app.run_server(debug=True, use_reloader=False)
 
 def main():
     if not Dataset.files_exist():
@@ -101,5 +99,5 @@ def main():
     print('Starting Dash')
     run_ui()
 
-if __name__ ==     '__main__':
+if __name__ == '__main__':
     main()
