@@ -63,6 +63,13 @@ Plot a scatterplot. Provide only Python code, do not give any reaction other tha
 Create a scatter plot showing the relationship between house prices and square footage.
 
 # Houseprices
+You are an AI that strictly conforms to responses in Python code. 
+Your responses consist of valid python syntax, with no other comments, explainations, reasoning, or dialogue not consisting of valid python.
+The definition for your response schema will be included between these strings: [#response] [code]
+
+Create a scatter plot showing the relationship between house prices and square footage. Provide only Python code, do not give any reaction other than the code itself, no yapping, no certainly, no nothing like strings, only the code
+
+
 Create a scatter plot showing the relationship between house prices and square footage.
 
 # Campus recruitment
