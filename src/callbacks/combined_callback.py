@@ -52,9 +52,8 @@ def save_prompt(n_clicks, prompt, selected_dataset_store):
         data_path = get_dataset_path(selected_dataset_store)
         if os.path.exists(data_path):
             df = pd.read_csv(data_path)
-            column_names = ", ".join(df.columns)
             #give the first 2 rows of the dataset as context
-            modified_prompt = f"Dataset: {selected_dataset_store}\n\nDataset columns: {column_names}\n\nPrompt: {prompt}\n\nContext: {df.head(2).to_string(index=False)}"
+            modified_prompt = f"Dataset: {selected_dataset_store}\n\nContext: {df.head(2).to_string(index=False)}\n\nPrompt: {prompt}"
             response = tlm.prompt(modified_prompt)
             return response["response"]
     return ""
