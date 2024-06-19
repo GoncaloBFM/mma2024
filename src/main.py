@@ -5,7 +5,7 @@ from src.widgets import ohls_chart, help_popup, chart
 import dash_bootstrap_components as dbc
 import pandas as pd
 import src.callbacks.combined_callback  # Import the combined callback
-from src.widgets import dataset_selection
+from src.widgets import dataset_selection, input
 
 # Sample data, replace with your actual data source
 chart_data = pd.DataFrame({
@@ -37,10 +37,6 @@ def run_ui():
     external_stylesheets = [dbc.themes.BOOTSTRAP]
     app = Dash(__name__, external_stylesheets=external_stylesheets, suppress_callback_exceptions=True)
 
-    prompt_input = dcc.Textarea(id='prompt-input', style={'width': '100%', 'height': 100}, placeholder='Enter your prompt here...')
-    answer_widget = dcc.Textarea(id='answer-input', style={'width': '100%', 'height': 100}, placeholder='Answer will be displayed here...')
-    score_store = dcc.Store(id='score-store')
-
     initial_chart = chart.create_chart(code, 'Housing')  # Provide the dataset name
     help_popup_widget = help_popup.create_help_popup()
     ohls_chart_widget = ohls_chart.create_ohlc_chart(chart_data)
@@ -50,17 +46,7 @@ def run_ui():
             dataset_selection.create_dataset_selection()
         ]),
         dcc.Tab(label='Prompt & Code', children=[
-            dbc.Container([
-                dbc.Row([
-                    dbc.Col(prompt_input, width=12),
-                    dbc.Col(answer_widget, width=12)
-                ]),
-                dbc.Row([
-                    dbc.Col(dbc.Button('Save', id='save-button', color='primary'), width='auto'),
-                    dbc.Col(dbc.Button('Submit', id='submit-button', color='success'), width='auto')
-                ], justify='center', style={'marginTop': '20px'}),
-                score_store
-            ], fluid=True)
+            input.create_input(),
         ]),
         dcc.Tab(label='Chart/ Visualization', children=[
             dbc.Container([

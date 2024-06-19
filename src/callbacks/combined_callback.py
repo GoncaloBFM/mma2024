@@ -4,10 +4,10 @@ from src.widgets import chart, dataset_selection
 from cleanlab_studio import Studio
 import os
 from dotenv import load_dotenv
-import dash
 import matplotlib.pyplot as plt
 import io
 import base64
+import ast
 
 # Load environment variables from .env file
 load_dotenv()
@@ -41,13 +41,14 @@ def update_table(selected_dataset):
     return "", ""
 
 @callback(
-    Output('answer-input', 'value'),
+    [Output('answer-input', 'value'),
+     Output('suggestions-container', 'children')],
     Input('save-button', 'n_clicks'),
     State('prompt-input', 'value'),
     State('selected-dataset-store', 'data'),
     prevent_initial_call=True
 )
-def save_prompt(n_clicks, prompt, selected_dataset_store):
+def handle_save_and_suggestions(n_clicks, prompt, selected_dataset_store):
     if n_clicks > 0 and prompt and selected_dataset_store:
         data_path = get_dataset_path(selected_dataset_store)
         if os.path.exists(data_path):
@@ -55,8 +56,35 @@ def save_prompt(n_clicks, prompt, selected_dataset_store):
             column_names = ", ".join(df.columns)
             modified_prompt = f"Dataset: {selected_dataset_store}\n\nDataset columns: {column_names}\n\nPrompt: {prompt}"
             response = tlm.prompt(modified_prompt)
-            return response["response"]
-    return ""
+            answer_response = response["response"]
+            
+            improvement_prompt = (
+                "An LLM will be provided with the following prompt and a dataset. "
+                "Your goal is to improve the prompt so that the LLM returns a more accurate response. "
+                "Provide 3 different suggestions how to improve parts of the prompt. "
+                "You should return only 1 line containing an array of suggestions and nothing else. "
+                "Example response: ['Plot a bar chart', 'Generate a pie chart', 'Plot a visualization'] "
+                f"Prompt: {prompt}"
+            )
+            try:
+                suggestions_output = tlm.prompt(improvement_prompt)
+                suggestions = ast.literal_eval(suggestions_output["response"])
+
+                improved_outputs = [tlm.prompt(suggestion) for suggestion in suggestions]
+
+                suggestions_list = [
+                    html.Div([
+                        html.Span(f"({output['trustworthiness_score']:.2f}) ", style={'fontWeight': 'bold'}),
+                        html.Button(suggestion, id={'type': 'suggestion-button', 'index': i}, n_clicks=0, style={'margin': '5px', 'width': 'auto'})
+                    ]) for i, (suggestion, output) in enumerate(zip(suggestions, improved_outputs))
+                ]
+
+                return answer_response, suggestions_list
+            except Exception as e:
+                return answer_response, [f"An error occurred: {e}"]
+        else:
+            return "", ""
+    return "", ""
 
 @callback(
     [Output('old-chart-div', 'children'),
@@ -88,3 +116,4 @@ def update_chart(n_clicks, answer_code, current_new_chart, selected_dataset):
         else:
             return no_update, [f"Dataset {selected_dataset} not found."]
     return no_update, no_update
+
