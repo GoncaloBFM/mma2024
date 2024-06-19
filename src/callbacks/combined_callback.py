@@ -1,10 +1,13 @@
-from dash import callback, Output, Input, State, no_update
+from dash import callback, html, Output, Input, State, no_update, dcc
 import pandas as pd
 from src.widgets import chart, dataset_selection
 from cleanlab_studio import Studio
 import os
 from dotenv import load_dotenv
 import dash
+import matplotlib.pyplot as plt
+import io
+import base64
 
 # Load environment variables from .env file
 load_dotenv()
@@ -23,43 +26,37 @@ def get_dataset_path(dataset_name):
 
 @callback(
     [Output('dataset-table', 'children'),
-     Output('selected-dataset-store', 'data'),
-     Output('answer-input', 'value')],
-    [Input('dataset-dropdown', 'value'),
-     Input('save-button', 'n_clicks')],
-    [State('prompt-input', 'value'),
-     State('selected-dataset-store', 'data')],
+     Output('selected-dataset-store', 'data')],
+    Input('dataset-dropdown', 'value'),
     prevent_initial_call=True
 )
-def update_table_and_save_prompt(selected_dataset, n_clicks, prompt, selected_dataset_store):
-    ctx = dash.callback_context
-
-    if not ctx.triggered:
-        return "", "", ""
-    
-    trigger_id = ctx.triggered[0]['prop_id'].split('.')[0]
-
-    if trigger_id == 'dataset-dropdown' and selected_dataset:
+def update_table(selected_dataset):
+    if selected_dataset:
         data_path = get_dataset_path(selected_dataset)
         if os.path.exists(data_path):
             data = pd.read_csv(data_path)
-            return dataset_selection.create_table(data), selected_dataset, no_update
+            return dataset_selection.create_table(data), selected_dataset
         else:
-            return f"Dataset {selected_dataset} not found.", "", no_update
+            return f"Dataset {selected_dataset} not found.", ""
+    return "", ""
 
-    if trigger_id == 'save-button' and n_clicks > 0 and prompt:
-        if selected_dataset_store:
-            data_path = get_dataset_path(selected_dataset_store)
-            if os.path.exists(data_path):
-                df = pd.read_csv(data_path)
-                column_names = ", ".join(df.columns)
-                modified_prompt = f"Dataset: {selected_dataset_store}\n\nDataset columns: {column_names}\n\nPrompt: {prompt}"
-                response = tlm.prompt(modified_prompt)
-                return no_update, selected_dataset_store, response["response"]
-            else:
-                return no_update, selected_dataset_store, f"Dataset {selected_dataset_store} not found."
-    
-    return no_update, no_update, no_update
+@callback(
+    Output('answer-input', 'value'),
+    Input('save-button', 'n_clicks'),
+    State('prompt-input', 'value'),
+    State('selected-dataset-store', 'data'),
+    prevent_initial_call=True
+)
+def save_prompt(n_clicks, prompt, selected_dataset_store):
+    if n_clicks > 0 and prompt and selected_dataset_store:
+        data_path = get_dataset_path(selected_dataset_store)
+        if os.path.exists(data_path):
+            df = pd.read_csv(data_path)
+            column_names = ", ".join(df.columns)
+            modified_prompt = f"Dataset: {selected_dataset_store}\n\nDataset columns: {column_names}\n\nPrompt: {prompt}"
+            response = tlm.prompt(modified_prompt)
+            return response["response"]
+    return ""
 
 @callback(
     [Output('old-chart-div', 'children'),
@@ -72,14 +69,22 @@ def update_table_and_save_prompt(selected_dataset, n_clicks, prompt, selected_da
 )
 def update_chart(n_clicks, answer_code, current_new_chart, selected_dataset):
     if n_clicks > 0 and answer_code and selected_dataset:
-        try:
-            data_path = get_dataset_path(selected_dataset)
-            if os.path.exists(data_path):
-                data = pd.read_csv(data_path)
-                new_chart = chart.create_chart(answer_code, data)
-                return current_new_chart, [new_chart]
-            else:
-                return no_update, [f"Dataset {selected_dataset} not found."]
-        except Exception as e:
-            return no_update, [f"An error occurred while plotting the chart: {str(e)}"]
+        data_path = get_dataset_path(selected_dataset)
+        if os.path.exists(data_path):
+            data = pd.read_csv(data_path)
+            try:
+                modified_code = answer_code.replace("housing", "df")
+                exec(modified_code, {'df': data, 'plt': plt})
+                
+                buf = io.BytesIO()
+                plt.savefig(buf, format='png')
+                buf.seek(0)
+                image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+                plt.close()
+                
+                return current_new_chart, [html.Img(src=f'data:image/png;base64,{image_base64}')]
+            except Exception as e:
+                return no_update, [f"An error occurred while plotting the chart: {str(e)}"]
+        else:
+            return no_update, [f"Dataset {selected_dataset} not found."]
     return no_update, no_update
