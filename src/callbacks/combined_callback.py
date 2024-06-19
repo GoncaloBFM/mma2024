@@ -1,4 +1,5 @@
-from dash import callback, html, Output, Input, State, no_update, dcc
+from dash import callback, html, Output, Input, State, no_update, dcc, ctx
+from dash.dependencies import ALL
 import pandas as pd
 from src.widgets import chart, dataset_selection
 from cleanlab_studio import Studio
@@ -117,3 +118,15 @@ def update_chart(n_clicks, answer_code, current_new_chart, selected_dataset):
             return no_update, [f"Dataset {selected_dataset} not found."]
     return no_update, no_update
 
+@callback(
+    Output('prompt-input', 'value'),
+    Input({'type': 'suggestion-button', 'index': ALL}, 'n_clicks'),
+    State({'type': 'suggestion-button', 'index': ALL}, 'children'),
+    prevent_initial_call=True
+)
+def update_prompt_from_suggestion(n_clicks, suggestions):
+    ctx_triggered = ctx.triggered_id
+    if not ctx_triggered:
+        return no_update
+    triggered_index = ctx_triggered['index']
+    return suggestions[triggered_index]
