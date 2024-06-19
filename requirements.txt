@@ -1,5 +1,6 @@
 plotly==5.20.0
 dash==2.16.1
+numpy==1.26.4
 git+https://github.com/openai/CLIP.git
 dash-bootstrap-components
 pandas
