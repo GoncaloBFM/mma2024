@@ -1,3 +1,4 @@
+import logging
 from dash import callback, html, Output, Input, State, no_update, dcc, ctx
 from dash.dependencies import ALL
 import pandas as pd
@@ -9,6 +10,10 @@ import matplotlib.pyplot as plt
 import io
 import base64
 import ast
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -32,12 +37,15 @@ def get_dataset_path(dataset_name):
     prevent_initial_call=True
 )
 def update_table(selected_dataset):
+    logger.info(f"Updating table for dataset: {selected_dataset}")
     if selected_dataset:
         data_path = get_dataset_path(selected_dataset)
         if os.path.exists(data_path):
             data = pd.read_csv(data_path)
+            logger.info(f"Dataset {selected_dataset} loaded successfully")
             return dataset_selection.create_table(data), selected_dataset
         else:
+            logger.warning(f"Dataset {selected_dataset} not found")
             return f"Dataset {selected_dataset} not found.", ""
     return "", ""
 
@@ -50,11 +58,12 @@ def update_table(selected_dataset):
     prevent_initial_call=True
 )
 def handle_save_and_suggestions(n_clicks, prompt, selected_dataset_store):
+    logger.info(f"Handling save and suggestions for prompt: {prompt}")
     if n_clicks > 0 and prompt and selected_dataset_store:
         data_path = get_dataset_path(selected_dataset_store)
         if os.path.exists(data_path):
             df = pd.read_csv(data_path)
-            #give the first 2 rows of the dataset as context
+            logger.info(f"Dataset {selected_dataset_store} loaded successfully for suggestions")
             modified_prompt = f"Dataset: {selected_dataset_store}\n\nContext: {df.head(2).to_string(index=False)}\n\nPrompt: {prompt}"
             response = tlm.prompt(modified_prompt)
             answer_response = response["response"]
@@ -70,6 +79,7 @@ def handle_save_and_suggestions(n_clicks, prompt, selected_dataset_store):
             try:
                 suggestions_output = tlm.prompt(improvement_prompt)
                 suggestions = ast.literal_eval(suggestions_output["response"])
+                logger.info(f"Suggestions received: {suggestions}")
 
                 improved_outputs = [tlm.prompt(suggestion) for suggestion in suggestions]
 
@@ -82,8 +92,10 @@ def handle_save_and_suggestions(n_clicks, prompt, selected_dataset_store):
 
                 return answer_response, suggestions_list
             except Exception as e:
+                logger.error(f"Error during suggestions: {e}")
                 return answer_response, [f"An error occurred: {e}"]
         else:
+            logger.warning(f"Dataset {selected_dataset_store} not found")
             return "", ""
     return "", ""
 
@@ -97,10 +109,12 @@ def handle_save_and_suggestions(n_clicks, prompt, selected_dataset_store):
     prevent_initial_call=True
 )
 def update_chart(n_clicks, answer_code, current_new_chart, selected_dataset):
+    logger.info(f"Updating chart with answer code: {answer_code}")
     if n_clicks > 0 and answer_code and selected_dataset:
         data_path = get_dataset_path(selected_dataset)
         if os.path.exists(data_path):
             data = pd.read_csv(data_path)
+            logger.info(f"Dataset {selected_dataset} loaded successfully for chart update")
             try:
                 modified_code = answer_code.replace("housing", "df")
                 exec(modified_code, {'df': data, 'plt': plt})
@@ -111,10 +125,13 @@ def update_chart(n_clicks, answer_code, current_new_chart, selected_dataset):
                 image_base64 = base64.b64encode(buf.read()).decode('utf-8')
                 plt.close()
                 
+                logger.info("Chart updated successfully")
                 return current_new_chart, [html.Img(src=f'data:image/png;base64,{image_base64}')]
             except Exception as e:
+                logger.error(f"Error while plotting the chart: {e}")
                 return no_update, [f"An error occurred while plotting the chart: {str(e)}"]
         else:
+            logger.warning(f"Dataset {selected_dataset} not found")
             return no_update, [f"Dataset {selected_dataset} not found."]
     return no_update, no_update
 
@@ -129,4 +146,6 @@ def update_prompt_from_suggestion(n_clicks, suggestions):
     if not ctx_triggered:
         return no_update
     triggered_index = ctx_triggered['index']
+    logger.info(f"Updating prompt from suggestion index: {triggered_index}")
     return suggestions[triggered_index]
+
