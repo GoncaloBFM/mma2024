@@ -4,7 +4,7 @@ from dash.dependencies import ALL
 import pandas as pd
 from src.widgets import chart, dataset_selection
 from openai import OpenAI
-# from cleanlab_studio import Studio  # Import the Studio for TLM
+from cleanlab_studio import Studio
 import os
 from dotenv import load_dotenv
 import matplotlib.pyplot as plt
@@ -19,12 +19,16 @@ logger = logging.getLogger(__name__)
 # Load environment variables from .env file
 load_dotenv()
 
-# Initialize the OpenAI client with your API key
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-
-# # Initialize the TLM client with your API key
-# studio = Studio(api_key=os.environ.get("TLM_API_KEY"))
-# tlm = studio.TLM()
+# Initialize clients based on environment variables
+USE_OPEN_AI = os.getenv("USE_OPEN_AI", "false").lower() == "true"
+CALCULATE_SCORES = os.getenv("CALCULATE_SCORES", "false").lower() == "true"
+openai_client = None
+tlm_client = None
+if USE_OPEN_AI:
+    openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+if not USE_OPEN_AI or CALCULATE_SCORES:
+    studio = Studio(api_key=os.environ.get("TLM_API_KEY"))
+    tlm_client = studio.TLM()
 
 # Function to get dataset path
 def get_dataset_path(dataset_name):
@@ -63,24 +67,34 @@ def get_suggestions_and_scores(prompt, df, dataset_name):
             "Provide only Python code, do not give any reaction other than the code itself, no yapping, no certainly, no nothing like strings, only the code. "
         )
 
-        logger.info(f"Sending code prompt to OpenAI: {code_prompt}")
-
-        code_output = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": code_prompt}
-            ],
-            max_tokens=150
-        )
-        code = code_output.choices[0].message.content.strip()
+        # Send prompt to the appropriate client
+        code = None
+        if USE_OPEN_AI:
+            logger.info(f"Sending code prompt to OpenAI: {code_prompt}")
+            code_output = openai_client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": code_prompt}
+                ],
+                max_tokens=150
+            )
+            code = code_output.choices[0].message.content.strip()
+        else:
+            logger.info(f"Sending code prompt to TLM: {code_prompt}")
+            code = tlm_client.prompt(code_prompt)["response"]
+        
         logger.info(f"Code received: {code}")
 
-        # Evaluate the trustworthiness of the prompt
-        trustworthiness_score = "" # ToDo: Replace with actual logic: 
-        # trustworthiness_score = tlm.prompt(prompt)["trustworthiness_score"]
+        # Calculate trustworthiness score if required
+        trustworthiness_score = ""
+        if CALCULATE_SCORES:
+            logger.info(f"Sending original prompt to TLM: {prompt}")
+            trustworthiness_score = tlm_client.prompt(prompt)["trustworthiness_score"]
+        
         logger.info(f"Trustworthiness score: {trustworthiness_score}")
 
+        # Generate improvement suggestions
         improvement_prompt = (
             "An LLM will be provided with the following prompt and a dataset. "
             "Your goal is to improve the prompt so that the LLM returns a more accurate response. "
@@ -90,41 +104,55 @@ def get_suggestions_and_scores(prompt, df, dataset_name):
             f"Prompt: {prompt}"
         )
 
-        logger.info(f"Sending improvement prompt to OpenAI: {improvement_prompt}")
-
-        code_output = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": improvement_prompt}
-            ],
-            max_tokens=100
-        )
-        suggestions_content = code_output.choices[0].message.content.strip()
-        suggestions = ast.literal_eval(suggestions_content)
-        logger.info(f"Suggestions received: {suggestions}")
-
-        suggestions_with_scores = []
-        for suggestion in suggestions:
-            suggestion_code_prompt = code_prompt.replace(prompt, suggestion)
-            logger.info(f"Sending suggestion code prompt to OpenAI: {suggestion_code_prompt}")
-
-            code_output = client.chat.completions.create(
+        suggestions_response = None
+        if USE_OPEN_AI:
+            logger.info(f"Sending improvement prompt to OpenAI: {improvement_prompt}")
+            suggestions_output = openai_client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant."},
-                    {"role": "user", "content": suggestion_code_prompt}
+                    {"role": "user", "content": improvement_prompt}
                 ],
-                max_tokens=150
+                max_tokens=100
             )
-            suggestion_code = code_output.choices[0].message.content.strip()
+            suggestions_response = suggestions_output.choices[0].message.content.strip()
+        else:
+            logger.info(f"Sending improvement prompt to TLM: {improvement_prompt}")
+            suggestions_response = tlm_client.prompt(improvement_prompt)["response"]
+        
+        logger.info(f"Suggestions received: {suggestions_response}")
+        suggestions_array = ast.literal_eval(suggestions_response)
+
+        # Evaluate suggestions
+        suggestions = []
+        for suggestion in suggestions_array:
+            suggestion_code_prompt = code_prompt.replace(prompt, suggestion)
+            logger.info(f"Sending suggestion code prompt to OpenAI: {suggestion_code_prompt}")
+
+            suggestion_code = None
+            if USE_OPEN_AI:
+                suggestion_code_output = openai_client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": "You are a helpful assistant."},
+                        {"role": "user", "content": suggestion_code_prompt}
+                    ],
+                    max_tokens=150
+                )
+                suggestion_code = suggestion_code_output.choices[0].message.content.strip()
+            else:
+                suggestion_code = tlm_client.prompt(suggestion_code_prompt)["response"]
+            
             logger.info(f"Suggestion code received: {suggestion_code}")
 
-            suggestion_trustworthiness_score = ""  # ToDo: Replace with actual logic
-            # suggestion_trustworthiness_score = tlm.prompt(suggestion)["trustworthiness_score"]
-            suggestions_with_scores.append((suggestion, suggestion_trustworthiness_score))
+            suggestion_trustworthiness_score = ""
+            if CALCULATE_SCORES:
+                logger.info(f"Sending suggestion prompt to TLM: {suggestion}")
+                suggestion_trustworthiness_score = tlm_client.prompt(suggestion)["trustworthiness_score"]
+            
+            suggestions.append((suggestion, suggestion_trustworthiness_score, suggestion_code))
 
-        return code, trustworthiness_score, suggestions_with_scores
+        return code, trustworthiness_score, suggestions
 
     except Exception as e:
         logger.exception(f"Error getting suggestions and scores: {e}")
@@ -150,9 +178,9 @@ def handle_save_and_suggestions(n_clicks, prompt, selected_dataset_store):
 
             suggestions_list = [
                 html.Div([
-                    html.Span(f"({score}) ", style={'fontWeight': 'bold'}),  # Ensure the score is displayed as is
+                    html.Span(f"({suggestion_score}) ", style={'fontWeight': 'bold'}),  # Ensure the score is displayed as is
                     html.Button(suggestion, id={'type': 'suggestion-button', 'index': i}, n_clicks=0, style={'margin': '5px', 'width': 'auto'})
-                ]) for i, (suggestion, score) in enumerate(suggestions_with_scores)
+                ]) for i, (suggestion, suggestion_score, suggestion_code) in enumerate(suggestions_with_scores)
             ]
 
             return code, suggestions_list
@@ -171,7 +199,7 @@ def handle_save_and_suggestions(n_clicks, prompt, selected_dataset_store):
     prevent_initial_call=True
 )
 def update_chart(n_clicks, answer_code, current_new_chart, selected_dataset):
-    logger.info(f"Submit button clicked. Answer code: {answer_code}, n_clicks: {n_clicks}, selected_dataset: {selected_dataset}")
+    logger.info(f"Submit button clicked. Code that will be executed: {answer_code}, n_clicks: {n_clicks}, selected_dataset: {selected_dataset}")
     if n_clicks > 0 and answer_code and selected_dataset:
         data_path = get_dataset_path(selected_dataset)
         if os.path.exists(data_path):
