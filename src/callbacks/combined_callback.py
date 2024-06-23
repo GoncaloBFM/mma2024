@@ -24,8 +24,12 @@ USE_OPEN_AI = os.getenv("USE_OPEN_AI", "false").lower() == "true"
 CALCULATE_SCORES = os.getenv("CALCULATE_SCORES", "false").lower() == "true"
 openai_client = None
 tlm_client = None
+
+# Initialize OpenAI client if needed
 if USE_OPEN_AI:
     openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
+# Initialize TLM client if needed
 if not USE_OPEN_AI or CALCULATE_SCORES:
     studio = Studio(api_key=os.environ.get("TLM_API_KEY"))
     tlm_client = studio.TLM()
@@ -35,13 +39,14 @@ def get_dataset_path(dataset_name):
     base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../dataset/ourdata'))
     return os.path.join(base_path, f'{dataset_name}.csv')
 
+# Callback to update the dataset table based on selected dataset
 @callback(
     [Output('dataset-table', 'children'),
      Output('selected-dataset-store', 'data')],
     Input('dataset-dropdown', 'value'),
     prevent_initial_call=True
 )
-def update_table(selected_dataset):
+def table_selected(selected_dataset):
     logger.info(f"Updating table for dataset: {selected_dataset}")
     if selected_dataset:
         data_path = get_dataset_path(selected_dataset)
@@ -54,7 +59,7 @@ def update_table(selected_dataset):
             return f"Dataset {selected_dataset} not found.", ""
     return "", ""
 
-def get_suggestions_and_scores(prompt, df, dataset_name):
+def get_code_and_suggestions(prompt, df, dataset_name):
     try:
         code_prompt = (
             f"Dataset: {dataset_name}\n\nContext: {df.head(2).to_string(index=False)}\n\nPrompt: "
@@ -67,7 +72,7 @@ def get_suggestions_and_scores(prompt, df, dataset_name):
             "Provide only Python code, do not give any reaction other than the code itself, no yapping, no certainly, no nothing like strings, only the code. "
         )
 
-        # Send prompt to the appropriate client
+        # Get the code for the original prompt
         code = None
         if USE_OPEN_AI:
             logger.info(f"Sending code prompt to OpenAI: {code_prompt}")
@@ -86,7 +91,7 @@ def get_suggestions_and_scores(prompt, df, dataset_name):
         
         logger.info(f"Code received: {code}")
 
-        # Calculate trustworthiness score if required
+        # Get the trustworthiness score for the original prompt
         trustworthiness_score = ""
         if CALCULATE_SCORES:
             logger.info(f"Sending original prompt to TLM: {prompt}")
@@ -94,7 +99,7 @@ def get_suggestions_and_scores(prompt, df, dataset_name):
         
         logger.info(f"Trustworthiness score: {trustworthiness_score}")
 
-        # Generate improvement suggestions
+        # Get the suggestions
         improvement_prompt = (
             "An LLM will be provided with the following prompt and a dataset. "
             "Your goal is to improve the prompt so that the LLM returns a more accurate response. "
@@ -103,7 +108,6 @@ def get_suggestions_and_scores(prompt, df, dataset_name):
             "Example response: ['Plot a bar chart', 'Generate a pie chart', 'Plot a visualization'] "
             f"Prompt: {prompt}"
         )
-
         suggestions_response = None
         if USE_OPEN_AI:
             logger.info(f"Sending improvement prompt to OpenAI: {improvement_prompt}")
@@ -123,7 +127,7 @@ def get_suggestions_and_scores(prompt, df, dataset_name):
         logger.info(f"Suggestions received: {suggestions_response}")
         suggestions_array = ast.literal_eval(suggestions_response)
 
-        # Evaluate suggestions
+        # Get the code and trustworthiness score for each suggestion
         suggestions = []
         for suggestion in suggestions_array:
             suggestion_code_prompt = code_prompt.replace(prompt, suggestion)
@@ -166,7 +170,7 @@ def get_suggestions_and_scores(prompt, df, dataset_name):
     State('selected-dataset-store', 'data'),
     prevent_initial_call=True
 )
-def handle_save_and_suggestions(n_clicks, prompt, selected_dataset_store):
+def save_clicked(n_clicks, prompt, selected_dataset_store):
     logger.info(f"Handling save and suggestions for prompt: {prompt}, n_clicks: {n_clicks}, selected_dataset_store: {selected_dataset_store}")
     if n_clicks > 0 and prompt and selected_dataset_store:
         data_path = get_dataset_path(selected_dataset_store)
@@ -174,11 +178,11 @@ def handle_save_and_suggestions(n_clicks, prompt, selected_dataset_store):
             df = pd.read_csv(data_path)
             logger.info(f"Dataset {selected_dataset_store} loaded successfully for suggestions")
             
-            code, trustworthiness_score, suggestions_with_scores = get_suggestions_and_scores(prompt, df, selected_dataset_store)
+            code, trustworthiness_score, suggestions_with_scores = get_code_and_suggestions(prompt, df, selected_dataset_store)
 
             suggestions_list = [
                 html.Div([
-                    html.Span(f"({suggestion_score}) ", style={'fontWeight': 'bold'}),  # Ensure the score is displayed as is
+                    html.Span(f"({suggestion_score}) ", style={'fontWeight': 'bold'}),
                     html.Button(suggestion, id={'type': 'suggestion-button', 'index': i}, n_clicks=0, style={'margin': '5px', 'width': 'auto'})
                 ]) for i, (suggestion, suggestion_score, suggestion_code) in enumerate(suggestions_with_scores)
             ]
@@ -198,7 +202,7 @@ def handle_save_and_suggestions(n_clicks, prompt, selected_dataset_store):
     State('selected-dataset-store', 'data'),
     prevent_initial_call=True
 )
-def update_chart(n_clicks, answer_code, current_new_chart, selected_dataset):
+def submit_clicked(n_clicks, answer_code, current_new_chart, selected_dataset):
     logger.info(f"Submit button clicked. Code that will be executed: {answer_code}, n_clicks: {n_clicks}, selected_dataset: {selected_dataset}")
     if n_clicks > 0 and answer_code and selected_dataset:
         data_path = get_dataset_path(selected_dataset)
@@ -233,10 +237,11 @@ def update_chart(n_clicks, answer_code, current_new_chart, selected_dataset):
     State({'type': 'suggestion-button', 'index': ALL}, 'children'),
     prevent_initial_call=True
 )
-def update_prompt_from_suggestion(n_clicks, suggestions):
-    ctx_triggered = ctx.triggered_id
-    if not ctx_triggered or ctx_triggered['type'] != 'suggestion-button':
+def suggestion_clicked(n_clicks, suggestions):
+    if not any(n_clicks):
         return no_update
-    triggered_index = ctx_triggered['index']
+    
+    triggered_index = ctx.triggered_id['index']
     logger.info(f"Updating prompt from suggestion index: {triggered_index}")
+    
     return suggestions[triggered_index]
