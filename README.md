@@ -52,33 +52,25 @@ After the Dash server is running open http://127.0.0.1:8050/ on your browser.
 - Dash in 20 minutes: https://dash.plotly.com/tutorial
 - Plotly plots gallery: https://plotly.com/python/
 
-## test:
+## Test prompts:
+<!-- ToDo: Do we need this prompt?-->
 You are an AI that strictly conforms to responses in Python code. 
 Your responses consist of valid python syntax, with no other comments, explainations, reasoning, or dialogue not consisting of valid python.
 The definition for your response schema will be included between these strings: [#response] [code]
 
-Plot a scatterplot. Provide only Python code, do not give any reaction other than the code itself, no yapping, no certainly, no nothing like strings, only the code
+Plot a scatterplot. Provide only Python code, do not give any reaction other than the code itself, no yapping, no nothing like strings, only the code
 
-# HR
+### HR
 Create a scatter plot showing the relationship between house prices and square footage.
 
-# Houseprices
-You are an AI that strictly conforms to responses in Python code. 
-Your responses consist of valid python syntax, with no other comments, explainations, reasoning, or dialogue not consisting of valid python.
-If you have any comments or remarks they will have a # in front of it. It has to be strict python code.
-Use the dataset name, column names, and dataset itself as context for the correct visualization. The code implementation should make use of the correct variable names.
-The dataset is already loaded as df
-
-Create a scatter plot showing the relationship between house prices and square footage. Provide only Python code, do not give any reaction other than the code itself, no yapping, no certainly, no nothing like strings, only the code
-
-
+### Houseprices
 Create a scatter plot showing the relationship between house prices and square footage.
 
-# Campus recruitment
+### Campus recruitment
 Create a histogram showing the distribution of student scores in the dataset.
 
-# Supermarkt sales 
+### Supermarkt sales 
 Create a line chart showing the sales trend over time in the dataset.
 
-# Hotel bookings
+### Hotel bookings
 Create a bar chart showing the number of bookings per month in the dataset.
