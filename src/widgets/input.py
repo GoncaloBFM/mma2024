@@ -13,7 +13,7 @@ def create_input():
                     dbc.Col(dbc.Button('Save', id='save-button', color='primary'), width='auto'),
                     dbc.Col(dbc.Button('Submit', id='submit-button', color='success'), width='auto')
                 ], justify='center', style={'marginTop': '20px'}),
-                dcc.Store(id='score-store')
+                dcc.Store(id='score-store'),
             ], width=6),
             dbc.Col([
                 html.Div([
