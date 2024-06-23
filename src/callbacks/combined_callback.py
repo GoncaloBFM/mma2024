@@ -3,6 +3,7 @@ from dash import callback, html, Output, Input, State, no_update, dcc, ctx
 from dash.dependencies import ALL
 import pandas as pd
 from src.widgets import chart, dataset_selection
+from openai import OpenAI
 from cleanlab_studio import Studio
 import os
 from dotenv import load_dotenv
@@ -18,12 +19,14 @@ logger = logging.getLogger(__name__)
 # Load environment variables from .env file
 load_dotenv()
 
-# Get the API key from environment variables
-api_key = os.getenv('TLM_API_KEY')
+# Initialize the OpenAI client with your API key
+client = OpenAI(
+    api_key=os.environ.get("OPENAI_API_KEY"),
+)
 
-# Initialize the language model with your API key
-studio = Studio(api_key)
-tlm = studio.TLM()
+# # Initialize the TLM client with your API key
+# studio = Studio(api_key=os.environ.get("TLM_API_KEY"))
+# tlm = studio.TLM()
 
 # Function to get dataset path
 def get_dataset_path(dataset_name):
@@ -64,36 +67,68 @@ def handle_save_and_suggestions(n_clicks, prompt, selected_dataset_store):
         if os.path.exists(data_path):
             df = pd.read_csv(data_path)
             logger.info(f"Dataset {selected_dataset_store} loaded successfully for suggestions")
-            modified_prompt = f"Dataset: {selected_dataset_store}\n\nContext: {df.head(2).to_string(index=False)}\n\nPrompt: {prompt}"
-            response = tlm.prompt(modified_prompt)
-            answer_response = response["response"]
             
+            code_prompt = (
+                f"Dataset: {selected_dataset_store}\n\nContext: {df.head(2).to_string(index=False)}\n\nPrompt: "
+                "You are an AI that strictly conforms to responses in Python code. "
+                "Your responses consist of valid python syntax, with no other comments, explanations, reasoning, or dialogue not consisting of valid python. "
+                "If you have any comments or remarks they will have a # in front of it. It has to be strict python code. "
+                "Use the dataset name, column names, and dataset itself as context for the correct visualization. The code implementation should make use of the correct variable names. "
+                "The dataset is already loaded as df. "
+                f"{prompt}"
+                "Provide only Python code, do not give any reaction other than the code itself, no yapping, no certainly, no nothing like strings, only the code. "
+            )
+
+            code_output = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": code_prompt}
+                ],
+                max_tokens=150
+            )
+            code = code_output.choices[0].message.content.strip()
+            logger.info(f"Code: {code}")
+
+            # # Evaluate the trustworthiness of the prompt
+            # trustworthiness_score = tlm.prompt(prompt)["trustworthiness_score"]
+            # logger.info(f"Trustworthiness score: {trustworthiness_score}")
+
             improvement_prompt = (
                 "An LLM will be provided with the following prompt and a dataset. "
                 "Your goal is to improve the prompt so that the LLM returns a more accurate response. "
-                "Provide 3 different suggestions how to improve parts of the prompt. "
+                "Provide 3 different suggestions how to improve the prompt keeping the same information. "
                 "You should return only 1 line containing an array of suggestions and nothing else. "
                 "Example response: ['Plot a bar chart', 'Generate a pie chart', 'Plot a visualization'] "
                 f"Prompt: {prompt}"
             )
             try:
-                suggestions_output = tlm.prompt(improvement_prompt)
-                suggestions = ast.literal_eval(suggestions_output["response"])
+                suggestions_output = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": "You are a helpful assistant."},
+                        {"role": "user", "content": improvement_prompt}
+                    ],
+                    max_tokens=100
+                )
+                suggestions_content = suggestions_output.choices[0].message.content.strip()
+                suggestions = ast.literal_eval(suggestions_content)
                 logger.info(f"Suggestions received: {suggestions}")
 
-                improved_outputs = [tlm.prompt(suggestion) for suggestion in suggestions]
-
                 suggestions_list = [
+                    # html.Div([
+                    #     html.Span(f"({score:.2f}) ", style={'fontWeight': 'bold'}),
+                    #     html.Button(suggestion, id={'type': 'suggestion-button', 'index': i}, n_clicks=0, style={'margin': '5px', 'width': 'auto'})
+                    # ]) for i, (suggestion, score) in enumerate(zip(suggestions, trustworthiness_score))
                     html.Div([
-                        html.Span(f"({output['trustworthiness_score']:.2f}) ", style={'fontWeight': 'bold'}),
                         html.Button(suggestion, id={'type': 'suggestion-button', 'index': i}, n_clicks=0, style={'margin': '5px', 'width': 'auto'})
-                    ]) for i, (suggestion, output) in enumerate(zip(suggestions, improved_outputs))
+                    ]) for i, suggestion in enumerate(suggestions)
                 ]
 
-                return answer_response, suggestions_list
+                return code, suggestions_list
             except Exception as e:
                 logger.error(f"Error during suggestions: {e}")
-                return answer_response, [f"An error occurred: {e}"]
+                return code, [f"An error occurred: {e}"]
         else:
             logger.warning(f"Dataset {selected_dataset_store} not found")
             return "", ""
@@ -143,9 +178,8 @@ def update_chart(n_clicks, answer_code, current_new_chart, selected_dataset):
 )
 def update_prompt_from_suggestion(n_clicks, suggestions):
     ctx_triggered = ctx.triggered_id
-    if not ctx_triggered:
+    if not ctx_triggered or ctx_triggered['type'] != 'suggestion-button':
         return no_update
     triggered_index = ctx_triggered['index']
     logger.info(f"Updating prompt from suggestion index: {triggered_index}")
     return suggestions[triggered_index]
-
