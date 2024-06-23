@@ -16,10 +16,10 @@ import ast
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Load environment variables from .env file
+# Load environment variables
 load_dotenv()
 
-# Initialize clients based on environment variables
+# Initialize clients
 USE_OPEN_AI = os.getenv("USE_OPEN_AI", "false").lower() == "true"
 CALCULATE_SCORES = os.getenv("CALCULATE_SCORES", "false").lower() == "true"
 openai_client = None
@@ -39,26 +39,31 @@ def get_dataset_path(dataset_name):
     base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../dataset/ourdata'))
     return os.path.join(base_path, f'{dataset_name}.csv')
 
-# Callback to update the dataset table based on selected dataset
-@callback(
-    [Output('dataset-table', 'children'),
-     Output('selected-dataset-store', 'data')],
-    Input('dataset-dropdown', 'value'),
-    prevent_initial_call=True
-)
-def table_selected(selected_dataset):
-    logger.info(f"Updating table for dataset: {selected_dataset}")
-    if selected_dataset:
-        data_path = get_dataset_path(selected_dataset)
-        if os.path.exists(data_path):
-            data = pd.read_csv(data_path)
-            logger.info(f"Dataset {selected_dataset} loaded successfully")
-            return dataset_selection.create_table(data), selected_dataset
-        else:
-            logger.warning(f"Dataset {selected_dataset} not found")
-            return f"Dataset {selected_dataset} not found.", ""
-    return "", ""
+# Function to load dataset
+def load_dataset(dataset_name):
+    data_path = get_dataset_path(dataset_name)
+    if os.path.exists(data_path):
+        return pd.read_csv(data_path)
+    raise Exception(f"Dataset {dataset_name} not found")
 
+# Function to send prompt to OpenAI or TLM
+def send_prompt(client, prompt, max_tokens):
+    if USE_OPEN_AI:
+        logger.info(f"Sending prompt to OpenAI: {prompt}")
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=max_tokens
+        )
+        return response.choices[0].message.content.strip()
+    else:
+        logger.info(f"Sending prompt to TLM: {prompt}")
+        return client.prompt(prompt)["response"]
+
+# Function to get code and suggestions
 def get_code_and_suggestions(prompt, df, dataset_name):
     try:
         code_prompt = (
@@ -73,30 +78,13 @@ def get_code_and_suggestions(prompt, df, dataset_name):
         )
 
         # Get the code for the original prompt
-        code = None
-        if USE_OPEN_AI:
-            logger.info(f"Sending code prompt to OpenAI: {code_prompt}")
-            code_output = openai_client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a helpful assistant."},
-                    {"role": "user", "content": code_prompt}
-                ],
-                max_tokens=150
-            )
-            code = code_output.choices[0].message.content.strip()
-        else:
-            logger.info(f"Sending code prompt to TLM: {code_prompt}")
-            code = tlm_client.prompt(code_prompt)["response"]
-        
+        code = send_prompt(openai_client if USE_OPEN_AI else tlm_client, code_prompt, 150)
         logger.info(f"Code received: {code}")
 
         # Get the trustworthiness score for the original prompt
         trustworthiness_score = ""
         if CALCULATE_SCORES:
-            logger.info(f"Sending original prompt to TLM: {prompt}")
             trustworthiness_score = tlm_client.prompt(prompt)["trustworthiness_score"]
-        
         logger.info(f"Trustworthiness score: {trustworthiness_score}")
 
         # Get the suggestions
@@ -108,60 +96,51 @@ def get_code_and_suggestions(prompt, df, dataset_name):
             "Example response: ['Plot a bar chart', 'Generate a pie chart', 'Plot a visualization'] "
             f"Prompt: {prompt}"
         )
-        suggestions_response = None
-        if USE_OPEN_AI:
-            logger.info(f"Sending improvement prompt to OpenAI: {improvement_prompt}")
-            suggestions_output = openai_client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a helpful assistant."},
-                    {"role": "user", "content": improvement_prompt}
-                ],
-                max_tokens=100
-            )
-            suggestions_response = suggestions_output.choices[0].message.content.strip()
-        else:
-            logger.info(f"Sending improvement prompt to TLM: {improvement_prompt}")
-            suggestions_response = tlm_client.prompt(improvement_prompt)["response"]
-        
-        logger.info(f"Suggestions received: {suggestions_response}")
+        suggestions_response = send_prompt(openai_client if USE_OPEN_AI else tlm_client, improvement_prompt, 100)
         suggestions_array = ast.literal_eval(suggestions_response)
 
         # Get the code and trustworthiness score for each suggestion
         suggestions = []
         for suggestion in suggestions_array:
             suggestion_code_prompt = code_prompt.replace(prompt, suggestion)
-            logger.info(f"Sending suggestion code prompt to OpenAI: {suggestion_code_prompt}")
-
-            suggestion_code = None
-            if USE_OPEN_AI:
-                suggestion_code_output = openai_client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=[
-                        {"role": "system", "content": "You are a helpful assistant."},
-                        {"role": "user", "content": suggestion_code_prompt}
-                    ],
-                    max_tokens=150
-                )
-                suggestion_code = suggestion_code_output.choices[0].message.content.strip()
-            else:
-                suggestion_code = tlm_client.prompt(suggestion_code_prompt)["response"]
-            
-            logger.info(f"Suggestion code received: {suggestion_code}")
-
+            suggestion_code = send_prompt(openai_client if USE_OPEN_AI else tlm_client, suggestion_code_prompt, 150)
             suggestion_trustworthiness_score = ""
             if CALCULATE_SCORES:
-                logger.info(f"Sending suggestion prompt to TLM: {suggestion}")
                 suggestion_trustworthiness_score = tlm_client.prompt(suggestion)["trustworthiness_score"]
-            
             suggestions.append((suggestion, suggestion_trustworthiness_score, suggestion_code))
+            logger.info(f"Suggestion code received: {suggestion_code}")
 
         return code, trustworthiness_score, suggestions
 
     except Exception as e:
-        logger.exception(f"Error getting suggestions and scores: {e}")
+        logger.exception(f"Error getting suggestions: {e}")
         return "", "", []
 
+# Function to create suggestion buttons
+def create_suggestion_buttons(suggestions):
+    return [
+        html.Div([
+            html.Span(f"({suggestion_score}) ", style={'fontWeight': 'bold'}),
+            html.Button(suggestion, id={'type': 'suggestion-button', 'index': i}, n_clicks=0, style={'margin': '5px', 'width': 'auto'})
+        ]) for i, (suggestion, suggestion_score, suggestion_code) in enumerate(suggestions)
+    ]
+
+# Callback to update the dataset table based on selected dataset
+@callback(
+    [Output('dataset-table', 'children'),
+     Output('selected-dataset-store', 'data')],
+    Input('dataset-dropdown', 'value'),
+    prevent_initial_call=True
+)
+def table_selected(selected_dataset):
+    logger.info(f"Updating table for dataset: {selected_dataset}")
+    if selected_dataset:
+        data = load_dataset(selected_dataset)
+        logger.info(f"Dataset {selected_dataset} loaded successfully")
+        return dataset_selection.create_table(data), selected_dataset
+    return "", ""
+
+# Callback for saving clicked
 @callback(
     [Output('answer-input', 'value'),
      Output('suggestions-container', 'children')],
@@ -173,26 +152,14 @@ def get_code_and_suggestions(prompt, df, dataset_name):
 def save_clicked(n_clicks, prompt, selected_dataset_store):
     logger.info(f"Handling save and suggestions for prompt: {prompt}, n_clicks: {n_clicks}, selected_dataset_store: {selected_dataset_store}")
     if n_clicks > 0 and prompt and selected_dataset_store:
-        data_path = get_dataset_path(selected_dataset_store)
-        if os.path.exists(data_path):
-            df = pd.read_csv(data_path)
-            logger.info(f"Dataset {selected_dataset_store} loaded successfully for suggestions")
-            
-            code, trustworthiness_score, suggestions_with_scores = get_code_and_suggestions(prompt, df, selected_dataset_store)
-
-            suggestions_list = [
-                html.Div([
-                    html.Span(f"({suggestion_score}) ", style={'fontWeight': 'bold'}),
-                    html.Button(suggestion, id={'type': 'suggestion-button', 'index': i}, n_clicks=0, style={'margin': '5px', 'width': 'auto'})
-                ]) for i, (suggestion, suggestion_score, suggestion_code) in enumerate(suggestions_with_scores)
-            ]
-
-            return code, suggestions_list
-        else:
-            logger.warning(f"Dataset {selected_dataset_store} not found at path {data_path}")
-            return "", ""
+        df = load_dataset(selected_dataset_store)
+        
+        code, trustworthiness_score, suggestions = get_code_and_suggestions(prompt, df, selected_dataset_store)
+        suggestions_list = create_suggestion_buttons(suggestions)
+        return code, suggestions_list
     return "", ""
 
+# Callback for submitting clicked
 @callback(
     [Output('old-chart-div', 'children'),
      Output('new-chart-div', 'children')],
@@ -205,30 +172,24 @@ def save_clicked(n_clicks, prompt, selected_dataset_store):
 def submit_clicked(n_clicks, answer_code, current_new_chart, selected_dataset):
     logger.info(f"Submit button clicked. Code that will be executed: {answer_code}, n_clicks: {n_clicks}, selected_dataset: {selected_dataset}")
     if n_clicks > 0 and answer_code and selected_dataset:
-        data_path = get_dataset_path(selected_dataset)
-        if os.path.exists(data_path):
-            df = pd.read_csv(data_path)
-            logger.info(f"Dataset {selected_dataset} loaded successfully for chart update")
-            try:
-                modified_code = answer_code.replace("housing", "df")
-                exec(modified_code, {'df': df, 'plt': plt})
-                
-                buf = io.BytesIO()
-                plt.savefig(buf, format='png')
-                buf.seek(0)
-                image_base64 = base64.b64encode(buf.read()).decode('utf-8')
-                plt.close()
-                
-                logger.info("Chart updated successfully")
-
-                return current_new_chart, [html.Img(src=f'data:image/png;base64,{image_base64}')]
+        df = load_dataset(selected_dataset)
+        try:
+            modified_code = answer_code.replace("housing", "df") # ToDo: Do we need that?
+            exec(modified_code, {'df': df, 'plt': plt})
             
-            except Exception as e:
-                logger.exception(f"Error while plotting the chart: {e}")
-                return no_update, [f"An error occurred while plotting the chart: {str(e)}"]
-        else:
-            logger.warning(f"Dataset {selected_dataset} not found at path {data_path}")
-            return no_update, [f"Dataset {selected_dataset} not found."]
+            buf = io.BytesIO()
+            plt.savefig(buf, format='png')
+            buf.seek(0)
+            image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+            plt.close()
+            
+            logger.info("Chart updated successfully")
+
+            return current_new_chart, [html.Img(src=f'data:image/png;base64,{image_base64}')]
+        
+        except Exception as e:
+            logger.exception(f"Error while plotting the chart: {e}")
+            return no_update, [f"An error occurred while plotting the chart: {str(e)}"]
     return no_update, no_update
 
 @callback(
@@ -241,7 +202,8 @@ def suggestion_clicked(n_clicks, suggestions):
     if not any(n_clicks):
         return no_update
     
+    # Identify which button was clicked
     triggered_index = ctx.triggered_id['index']
     logger.info(f"Updating prompt from suggestion index: {triggered_index}")
-    
+
     return suggestions[triggered_index]
