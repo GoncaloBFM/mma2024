@@ -121,7 +121,8 @@ def create_suggestion_buttons(suggestions):
     return [
         html.Div([
             html.Span(f"({suggestion_score}) ", style={'fontWeight': 'bold'}),
-            html.Button(suggestion, id={'type': 'suggestion-button', 'index': i}, n_clicks=0, style={'margin': '5px', 'width': 'auto'})
+            html.Button(suggestion, id={'type': 'suggestion-button', 'index': i}, n_clicks=0, style={'margin': '5px', 'width': 'auto'}),
+            html.Div(suggestion_code, id={'type': 'suggestion-code', 'index': i}, style={'display': 'none'})
         ]) for i, (suggestion, suggestion_score, suggestion_code) in enumerate(suggestions)
     ]
 
@@ -142,7 +143,7 @@ def table_selected(selected_dataset):
 
 # Callback for saving clicked
 @callback(
-    [Output('answer-input', 'value'),
+    [Output('answer-input', 'value', allow_duplicate=True),
      Output('suggestions-container', 'children')],
     Input('save-button', 'n_clicks'),
     State('prompt-input', 'value'),
@@ -193,17 +194,21 @@ def submit_clicked(n_clicks, answer_code, current_new_chart, selected_dataset):
     return no_update, no_update
 
 @callback(
-    Output('prompt-input', 'value'),
+    [Output('prompt-input', 'value'),
+     Output('answer-input', 'value', allow_duplicate=True)],
     Input({'type': 'suggestion-button', 'index': ALL}, 'n_clicks'),
     State({'type': 'suggestion-button', 'index': ALL}, 'children'),
+    State({'type': 'suggestion-code', 'index': ALL}, 'children'),
     prevent_initial_call=True
 )
-def suggestion_clicked(n_clicks, suggestions):
-    if not any(n_clicks):
-        return no_update
+def suggestion_clicked(n_clicks, suggestions, suggestion_codes):
     
+    # If no suggestion was clicked yet
+    if not any(n_clicks):
+        return no_update, no_update
+
     # Identify which button was clicked
     triggered_index = ctx.triggered_id['index']
     logger.info(f"Updating prompt from suggestion index: {triggered_index}")
 
-    return suggestions[triggered_index]
+    return suggestions[triggered_index], suggestion_codes[triggered_index]
