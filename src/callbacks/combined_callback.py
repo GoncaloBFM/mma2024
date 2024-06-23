@@ -4,7 +4,7 @@ from dash.dependencies import ALL
 import pandas as pd
 from src.widgets import chart, dataset_selection
 from openai import OpenAI
-from cleanlab_studio import Studio
+# from cleanlab_studio import Studio  # Import the Studio for TLM
 import os
 from dotenv import load_dotenv
 import matplotlib.pyplot as plt
@@ -20,9 +20,7 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 # Initialize the OpenAI client with your API key
-client = OpenAI(
-    api_key=os.environ.get("OPENAI_API_KEY"),
-)
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 # # Initialize the TLM client with your API key
 # studio = Studio(api_key=os.environ.get("TLM_API_KEY"))
@@ -52,6 +50,86 @@ def update_table(selected_dataset):
             return f"Dataset {selected_dataset} not found.", ""
     return "", ""
 
+def get_suggestions_and_scores(prompt, df, dataset_name):
+    try:
+        code_prompt = (
+            f"Dataset: {dataset_name}\n\nContext: {df.head(2).to_string(index=False)}\n\nPrompt: "
+            "You are an AI that strictly conforms to responses in Python code. "
+            "Your responses consist of valid python syntax, with no other comments, explanations, reasoning, or dialogue not consisting of valid python. "
+            "If you have any comments or remarks they will have a # in front of it. It has to be strict python code. "
+            "Use the dataset name, column names, and dataset itself as context for the correct visualization. The code implementation should make use of the correct variable names. "
+            "The dataset is already loaded as df. "
+            f"{prompt}"
+            "Provide only Python code, do not give any reaction other than the code itself, no yapping, no certainly, no nothing like strings, only the code. "
+        )
+
+        logger.info(f"Sending code prompt to OpenAI: {code_prompt}")
+
+        code_output = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": code_prompt}
+            ],
+            max_tokens=150
+        )
+        code = code_output.choices[0].message.content.strip()
+        logger.info(f"Code received: {code}")
+
+        # Evaluate the trustworthiness of the prompt
+        trustworthiness_score = "" # ToDo: Replace with actual logic: 
+        # trustworthiness_score = tlm.prompt(prompt)["trustworthiness_score"]
+        logger.info(f"Trustworthiness score: {trustworthiness_score}")
+
+        improvement_prompt = (
+            "An LLM will be provided with the following prompt and a dataset. "
+            "Your goal is to improve the prompt so that the LLM returns a more accurate response. "
+            "Provide 3 different suggestions how to improve the prompt keeping the same information. "
+            "You should return only 1 line containing an array of suggestions and nothing else. "
+            "Example response: ['Plot a bar chart', 'Generate a pie chart', 'Plot a visualization'] "
+            f"Prompt: {prompt}"
+        )
+
+        logger.info(f"Sending improvement prompt to OpenAI: {improvement_prompt}")
+
+        code_output = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": improvement_prompt}
+            ],
+            max_tokens=100
+        )
+        suggestions_content = code_output.choices[0].message.content.strip()
+        suggestions = ast.literal_eval(suggestions_content)
+        logger.info(f"Suggestions received: {suggestions}")
+
+        suggestions_with_scores = []
+        for suggestion in suggestions:
+            suggestion_code_prompt = code_prompt.replace(prompt, suggestion)
+            logger.info(f"Sending suggestion code prompt to OpenAI: {suggestion_code_prompt}")
+
+            code_output = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": suggestion_code_prompt}
+                ],
+                max_tokens=150
+            )
+            suggestion_code = code_output.choices[0].message.content.strip()
+            logger.info(f"Suggestion code received: {suggestion_code}")
+
+            suggestion_trustworthiness_score = ""  # ToDo: Replace with actual logic
+            # suggestion_trustworthiness_score = tlm.prompt(suggestion)["trustworthiness_score"]
+            suggestions_with_scores.append((suggestion, suggestion_trustworthiness_score))
+
+        return code, trustworthiness_score, suggestions_with_scores
+
+    except Exception as e:
+        logger.exception(f"Error getting suggestions and scores: {e}")
+        return "", "", []
+
 @callback(
     [Output('answer-input', 'value'),
      Output('suggestions-container', 'children')],
@@ -61,76 +139,25 @@ def update_table(selected_dataset):
     prevent_initial_call=True
 )
 def handle_save_and_suggestions(n_clicks, prompt, selected_dataset_store):
-    logger.info(f"Handling save and suggestions for prompt: {prompt}")
+    logger.info(f"Handling save and suggestions for prompt: {prompt}, n_clicks: {n_clicks}, selected_dataset_store: {selected_dataset_store}")
     if n_clicks > 0 and prompt and selected_dataset_store:
         data_path = get_dataset_path(selected_dataset_store)
         if os.path.exists(data_path):
             df = pd.read_csv(data_path)
             logger.info(f"Dataset {selected_dataset_store} loaded successfully for suggestions")
             
-            code_prompt = (
-                f"Dataset: {selected_dataset_store}\n\nContext: {df.head(2).to_string(index=False)}\n\nPrompt: "
-                "You are an AI that strictly conforms to responses in Python code. "
-                "Your responses consist of valid python syntax, with no other comments, explanations, reasoning, or dialogue not consisting of valid python. "
-                "If you have any comments or remarks they will have a # in front of it. It has to be strict python code. "
-                "Use the dataset name, column names, and dataset itself as context for the correct visualization. The code implementation should make use of the correct variable names. "
-                "The dataset is already loaded as df. "
-                f"{prompt}"
-                "Provide only Python code, do not give any reaction other than the code itself, no yapping, no certainly, no nothing like strings, only the code. "
-            )
+            code, trustworthiness_score, suggestions_with_scores = get_suggestions_and_scores(prompt, df, selected_dataset_store)
 
-            code_output = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a helpful assistant."},
-                    {"role": "user", "content": code_prompt}
-                ],
-                max_tokens=150
-            )
-            code = code_output.choices[0].message.content.strip()
-            logger.info(f"Code: {code}")
+            suggestions_list = [
+                html.Div([
+                    html.Span(f"({score}) ", style={'fontWeight': 'bold'}),  # Ensure the score is displayed as is
+                    html.Button(suggestion, id={'type': 'suggestion-button', 'index': i}, n_clicks=0, style={'margin': '5px', 'width': 'auto'})
+                ]) for i, (suggestion, score) in enumerate(suggestions_with_scores)
+            ]
 
-            # # Evaluate the trustworthiness of the prompt
-            # trustworthiness_score = tlm.prompt(prompt)["trustworthiness_score"]
-            # logger.info(f"Trustworthiness score: {trustworthiness_score}")
-
-            improvement_prompt = (
-                "An LLM will be provided with the following prompt and a dataset. "
-                "Your goal is to improve the prompt so that the LLM returns a more accurate response. "
-                "Provide 3 different suggestions how to improve the prompt keeping the same information. "
-                "You should return only 1 line containing an array of suggestions and nothing else. "
-                "Example response: ['Plot a bar chart', 'Generate a pie chart', 'Plot a visualization'] "
-                f"Prompt: {prompt}"
-            )
-            try:
-                suggestions_output = client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=[
-                        {"role": "system", "content": "You are a helpful assistant."},
-                        {"role": "user", "content": improvement_prompt}
-                    ],
-                    max_tokens=100
-                )
-                suggestions_content = suggestions_output.choices[0].message.content.strip()
-                suggestions = ast.literal_eval(suggestions_content)
-                logger.info(f"Suggestions received: {suggestions}")
-
-                suggestions_list = [
-                    # html.Div([
-                    #     html.Span(f"({score:.2f}) ", style={'fontWeight': 'bold'}),
-                    #     html.Button(suggestion, id={'type': 'suggestion-button', 'index': i}, n_clicks=0, style={'margin': '5px', 'width': 'auto'})
-                    # ]) for i, (suggestion, score) in enumerate(zip(suggestions, trustworthiness_score))
-                    html.Div([
-                        html.Button(suggestion, id={'type': 'suggestion-button', 'index': i}, n_clicks=0, style={'margin': '5px', 'width': 'auto'})
-                    ]) for i, suggestion in enumerate(suggestions)
-                ]
-
-                return code, suggestions_list
-            except Exception as e:
-                logger.error(f"Error during suggestions: {e}")
-                return code, [f"An error occurred: {e}"]
+            return code, suggestions_list
         else:
-            logger.warning(f"Dataset {selected_dataset_store} not found")
+            logger.warning(f"Dataset {selected_dataset_store} not found at path {data_path}")
             return "", ""
     return "", ""
 
@@ -144,15 +171,15 @@ def handle_save_and_suggestions(n_clicks, prompt, selected_dataset_store):
     prevent_initial_call=True
 )
 def update_chart(n_clicks, answer_code, current_new_chart, selected_dataset):
-    logger.info(f"Updating chart with answer code: {answer_code}")
+    logger.info(f"Submit button clicked. Answer code: {answer_code}, n_clicks: {n_clicks}, selected_dataset: {selected_dataset}")
     if n_clicks > 0 and answer_code and selected_dataset:
         data_path = get_dataset_path(selected_dataset)
         if os.path.exists(data_path):
-            data = pd.read_csv(data_path)
+            df = pd.read_csv(data_path)
             logger.info(f"Dataset {selected_dataset} loaded successfully for chart update")
             try:
                 modified_code = answer_code.replace("housing", "df")
-                exec(modified_code, {'df': data, 'plt': plt})
+                exec(modified_code, {'df': df, 'plt': plt})
                 
                 buf = io.BytesIO()
                 plt.savefig(buf, format='png')
@@ -161,12 +188,14 @@ def update_chart(n_clicks, answer_code, current_new_chart, selected_dataset):
                 plt.close()
                 
                 logger.info("Chart updated successfully")
+
                 return current_new_chart, [html.Img(src=f'data:image/png;base64,{image_base64}')]
+            
             except Exception as e:
-                logger.error(f"Error while plotting the chart: {e}")
+                logger.exception(f"Error while plotting the chart: {e}")
                 return no_update, [f"An error occurred while plotting the chart: {str(e)}"]
         else:
-            logger.warning(f"Dataset {selected_dataset} not found")
+            logger.warning(f"Dataset {selected_dataset} not found at path {data_path}")
             return no_update, [f"Dataset {selected_dataset} not found."]
     return no_update, no_update
 
